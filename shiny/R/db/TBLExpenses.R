@@ -13,13 +13,18 @@ TBLExpenses   = R6::R6Class("TBL.EXPENSES"
           ,key = c("id")
           ,fields = list(
               id       = "ID"
-             ,account  = "ACCOUNT"
+             ,date     = "CDATE"
              ,method   = "METHOD"
+             ,group    = "GROUP"
+             ,category = "CATEGORY"
              ,amount   = "AMOUNT"
              ,note     = "NOTE"
              ,type     = "TYPE"
              ,active   = "ACTIVE"
              ,sync     = "SYNC"
+             ,year     = "DATEY"
+             ,month    = "DATEM"
+             ,day      = "DATED"
             )
      )
 )

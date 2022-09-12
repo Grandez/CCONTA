@@ -1,5 +1,5 @@
 JGGWEBROOT = R6::R6Class("JGG.INFO.APP"
-  ,portable   = TRUE
+  ,portable   = FALSE
   ,cloneable  = FALSE
   ,lock_class = TRUE
   ,active = list(
@@ -12,13 +12,13 @@ JGGWEBROOT = R6::R6Class("JGG.INFO.APP"
      ,initialize = function(mode="prod") {
          private$panels = HashMap$new()
          reg.finalizer(self,
-                  function(e) print("WEBROOT Finalizer has been called!"),
+                  function(e) message("WEBROOT Finalizer has been called!"),
                   onexit = TRUE)
          self$factory = OBJFactory$new(mode)
      }
      ,finalize = function() {
-        print("Destruyendo objeto")
-        factory$finalize()
+        message("Destruyendo objeto")
+        self$factory$finalize()
         factory = NULL
      }
      ,setSession = function(session) {
@@ -26,21 +26,20 @@ JGGWEBROOT = R6::R6Class("JGG.INFO.APP"
          invisible(self)
       }
      ,getPanel   = function(object, id, parent, session, ...) {
-         # panel = private$panels$get(id)
-         # if (is.null(panel)) {
-         #     args = list(...)
-         #     panel = object$new(id, parent, session, ...)
-         #     private$panels$put(id, panel)
+         panel = private$panels$get(id)
+         if (is.null(panel)) {
+             panel = object$new(id, factory, session, ...)
+             private$panels$put(id, panel)
          #     self$subscribe(id, panel$events$listen)
          #     if (is.null(args$dashboard))  shinyjs::js$jgg_add_page(id)
          #     if (!is.null(args$dashboard)) shinyjs::js$jgg_add_dash(paste(id, args$dashboard, sep="_"))
          # } else {
          #     if (panel$portfolio != private$idPortfolio) panel$loaded = FALSE
-         # }
+         }
          # panel$portfolio = private$idPortfolio
          # lapply(panel$events$events, function(evt) self$unnotify(evt))
          # shinyjs::js$jgg_set_page(id)
-         # panel
+         panel
      }
     ,addPanel = function(panel) { 
        # private$panels$put(panel$name, panel) 

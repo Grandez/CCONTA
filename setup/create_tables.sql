@@ -60,14 +60,17 @@ CREATE TABLE CATEGORIES  (
 -- Tabla de Presupuestos
 DROP TABLE  IF EXISTS BUDGET CASCADE;
 CREATE TABLE BUDGET    (
-    ID         BIGINT       NOT NULL -- Grupo:  IInnn    - II Origen / nnn ID
-   ,IDGROUP    BIGINT       NOT NULL -- Grupo
-   ,IDCATEGORY BIGINT       NOT NULL -- Fuente del gasto   
-   ,DATEY      SMALLINT     NOT NULL
-   ,DATEM      SMALLINT     NOT NULL       
-   ,AMOUNT    DECIMAL(7,3) NOT NULL -- Importe
-   ,DESCR     TEXT   
-   ,SYNC      TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
+    ID         BIGINT       NOT NULL           COMMENT "ID Unico prefijado"
+   ,IDGROUP    BIGINT       NOT NULL           COMMENT "ID del grupo"
+   ,IDCATEGORY BIGINT       NOT NULL           COMMENT "ID de la categoria"
+   ,IDMETHOD   BIGINT                          COMMENT "ID del metodo de pago"
+   ,DATEY      SMALLINT     NOT NULL           COMMENT "Year del presupuesto"
+   ,DATEM      SMALLINT     NOT NULL           COMMENT "Mes de inicio"
+   ,DATED      SMALLINT     NOT NULL DEFAULT 0 COMMENT "Si no es cero es pago unico"
+   ,FRECUENCY  TINYINT      NOT NULL DEFAULT 1 COMMENT "Frecuencia del gasto (mensual, bimensual, etc)"
+   ,AMOUNT     DECIMAL(7,3) NOT NULL -- Importe
+   ,DESCR      TEXT   
+   ,SYNC       TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
    ,PRIMARY KEY (ID)         -- Primary key
 );
 
@@ -90,7 +93,7 @@ CREATE TABLE  EXPENSES  (
    ,DATEM      SMALLINT     NOT NULL   
    ,DATED      SMALLINT     NOT NULL
    ,PRIMARY KEY (ID)                 -- Primary key
-   ,INDEX       (IDGROUP, IDCATEGORY)    -- Alternate Key
+   ,INDEX       (DATEY, DATEM, DATED, IDGROUP, IDCATEGORY)    -- Alternate Key
 --   ,INDEX       (ACCOUNT, TYPE)      -- Alternate Key   
    ,INDEX       (SYNC)               -- For synch
 );

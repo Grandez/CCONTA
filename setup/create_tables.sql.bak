@@ -20,7 +20,7 @@ CREATE TABLE ACCOUNTS  (
 -- Tabla de metodos de pago
 DROP TABLE  IF EXISTS METHODS CASCADE;
 CREATE TABLE METHODS  (
-    IDBANK    BIGINT       NOT NULL -- Grupo: IInnn - II Origen / nnn ID
+    IDACCOUNT BIGINT       NOT NULL -- Grupo: IInnn - II Origen / nnn ID
    ,ID        BIGINT       NOT NULL -- Grupo: IInnn - II Origen / nnn ID
    ,NAME      VARCHAR(255) NOT NULL -- Nombre del grupo
    ,DESCR     TEXT   
@@ -60,12 +60,17 @@ CREATE TABLE CATEGORIES  (
 -- Tabla de Presupuestos
 DROP TABLE  IF EXISTS BUDGET CASCADE;
 CREATE TABLE BUDGET    (
-    ID        BIGINT       NOT NULL -- Grupo:  IInnn    - II Origen / nnn ID
-   ,AMOUNT    DECIMAL(7,3) NOT NULL -- Importe
-   ,DESCR     TEXT   
-   ,ONCE      TINYINT      DEFAULT 0 -- Un unico gasto?   
-   ,ACTIVE    TINYINT      DEFAULT 1   
-   ,SYNC      TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
+    ID         BIGINT       NOT NULL -- Grupo:  IInnn    - II Origen / nnn ID
+   ,IDGROUP    BIGINT       NOT NULL -- Grupo
+   ,IDCATEGORY BIGINT       NOT NULL -- Fuente del gasto   
+   ,IDMETHOD   BIGINT                -- Fuente del gasto   
+   ,DATEY      SMALLINT     NOT NULL
+   ,DATEM      SMALLINT     NOT NULL       
+   ,DATED      SMALLINT     NOT NULL DEFAULT 0 -- Si no es cero es pago unico          
+   ,FRECUENCY  TINYINT      NOT NULL DEFAULT 1
+   ,AMOUNT     DECIMAL(7,3) NOT NULL -- Importe
+   ,DESCR      TEXT   
+   ,SYNC       TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
    ,PRIMARY KEY (ID)         -- Primary key
 );
 
@@ -75,7 +80,7 @@ DROP TABLE  IF EXISTS EXPENSES CASCADE;
 CREATE TABLE  EXPENSES  (
     ID         BIGINT       NOT NULL -- Unique ID II + timestamp
    ,CDATE      DATE         NOT NULL -- Fecha del gasto
-   ,METHOD     BIGINT       NOT NULL -- Fuente del gasto
+   ,IDMETHOD   BIGINT       NOT NULL -- Fuente del gasto
    ,IDGROUP    BIGINT       NOT NULL -- Grupo
    ,IDCATEGORY BIGINT       NOT NULL -- Fuente del gasto   
    ,AMOUNT     DECIMAL(7,3) NOT NULL -- Importe
@@ -88,7 +93,7 @@ CREATE TABLE  EXPENSES  (
    ,DATEM      SMALLINT     NOT NULL   
    ,DATED      SMALLINT     NOT NULL
    ,PRIMARY KEY (ID)                 -- Primary key
-   ,INDEX       (IDGROUP, IDCATEGORY)    -- Alternate Key
+   ,INDEX       (DATEY, DATEM, DATED, IDGROUP, IDCATEGORY)    -- Alternate Key
 --   ,INDEX       (ACCOUNT, TYPE)      -- Alternate Key   
    ,INDEX       (SYNC)               -- For synch
 );
