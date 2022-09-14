@@ -15,11 +15,17 @@ tabInputUI <- function(label, id) {
              ,tags$tr(tags$td("Importe"),    tags$td(numericInput (ns("impExpense"),    NULL, 0)))
              ,tags$tr(tags$td("Nota"),       tags$td(textAreaInput(ns("txtNote"),       NULL, rows=3)))
              ,tags$tr(tags$td("Tags"),       tags$td(textAreaInput(ns("txtTags"),       NULL, rows=3)))
-             ,tags$tr(tags$td(colspan="2",   "mensaje"))
-             ,tags$tr(tags$td(colspan="2",   actionBttn(ns("btnOK"), label="Procesar", color="success")
-                                         ,   actionBttn(ns("btnKO"), label="Cancelar", color="danger")))
+             #,tags$tr(tags$td(colspan="2",   ns("txtMessage")))
+             # ,tags$tr(tags$td(colspan="2",   actionBttn(ns("btnOK"), label="Procesar", color="success")
+             #                             ,   actionBttn(ns("btnKO"), label="Cancelar", color="danger")))
              )
         
     ))
+         ,tags$table(
+              tags$tr(tags$td(colspan="2",   textOutput(ns("txtMessage"))))
+             ,tags$tr(tags$td(colspan="2",   actionBttn(ns("btnOK"), label="Procesar", color="success")
+                                         ,   actionBttn(ns("btnKO"), label="Cancelar", color="danger")))
+             )
+       
     )
 }

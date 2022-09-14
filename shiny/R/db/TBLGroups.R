@@ -1,4 +1,4 @@
-TBLGroups   = R6::R6Class("TBL.GROUPS"
+TBLGroups   = R6::R6Class("CONTA.TBL.GROUPS"
     ,inherit    = TBLBase
     ,portable   = FALSE
     ,cloneable  = FALSE

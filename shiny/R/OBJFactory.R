@@ -10,10 +10,12 @@ OBJFactory = R6::R6Class("JGG.CCONTA.FACTORY"
        codes     = NULL
       ,parms     = NULL
       ,msg       = NULL
+      ,tools     = NULL
       ,print = function()     { message("Factoria de objetos YATA") }
-      ,initialize = function(mode="prod") { 
-          private$DBFactory   = BBDDFactory$new(mode)
-          private$objects     = HashMap$new()
+      ,initialize = function(mode="prod") {
+          private$DBFactory = BBDDFactory$new(mode)
+          private$objects   = HashMap$new()
+          self$tools        = OBJTools$new()
           reg.finalizer(self,
                   function(e) message("OBJFactory Finalizer has been called!"),
                   onexit = TRUE)

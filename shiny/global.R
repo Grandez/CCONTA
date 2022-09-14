@@ -3,6 +3,7 @@ suppressMessages(library(hash,         warn.conflicts = FALSE))
 suppressMessages(library(stringr,      warn.conflicts = FALSE))
 suppressMessages(library(tibble,       warn.conflicts = FALSE))
 suppressMessages(library(dplyr,        warn.conflicts = FALSE))
+suppressMessages(library(lubridate,    warn.conflicts = FALSE))
 # Shiny
 suppressMessages(library(shiny,        warn.conflicts = FALSE))
 suppressMessages(library(htmltools,    warn.conflicts = FALSE))

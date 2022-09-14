@@ -37,3 +37,23 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# Temporary files
+
+*.bak
+*.dump
+*.log
+.*
+~*
+
+src/*.o
+src/*.so
+src/*.dll
+**/bin/**
+
+# Work directories
+
+ext/**
+data/**
+
+**/output/**

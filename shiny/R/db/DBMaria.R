@@ -100,6 +100,7 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
                if (isolated) rollback()
                SQLError("EXECUTE", origin=cond$message, sql=qry, action="execute")
           },error = function (cond) {
+             browser()
                sqlcode = getSQLCode(cond)
                if (sqlcode == SQL_LOCK) isolated = TRUE
                if (isolated) rollback()

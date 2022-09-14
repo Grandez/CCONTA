@@ -1,13 +1,15 @@
-OBJExpenses = R6::R6Class("JGG.OBJ.EXPENSES"
+OBJExpenses = R6::R6Class("CONTA.OBJ.EXPENSES"
    ,portable   = FALSE
    ,cloneable  = FALSE
    ,lock_class = TRUE
    ,inherit    = OBJBase
    ,public = list(
       initialize = function(factory) {
+         super$initialize(factory)
          private$tblMethods    = factory$getTable("Methods")
          private$tblGroups     = factory$getTable("Groups")
          private$tblCategories = factory$getTable("Categories")
+         private$tblExpenses   = factory$getTable("Expenses")
       }
       ,getMethods    = function(all=FALSE)          { getTable(tblMethods, all) }
       ,getGroups     = function(all=FALSE)          { getTable(tblGroups,  all) }
@@ -17,15 +19,24 @@ OBJExpenses = R6::R6Class("JGG.OBJ.EXPENSES"
          invisible(self)
       }
       ,add = function(...) {
-         data = list(account = 0, method = 0, amount = 0, note = NULL, type = 0, active = 1, sync = 0)
-         input = list(...)
-         data = list.merge(data, input)
-         data$id = makeID(0)
-         # valida los datos
-         # Inserta en la tabla
-         # Procesa los tags
-         # invalida datos de resumen
+         private$expense = jgg_list_merge_list(private$expense, list(...))
+         private$expense$id = factory$tools$getID()
+         dt = private$expense$date
+         private$expense$year  = lubridate::year(dt)
+         private$expense$month = lubridate::month(dt)
+         private$expense$day   = lubridate::day(dt)
          
+         tryCatch({
+            tblExpenses$db$begin()
+            tblExpenses$add(private$expense)
+            addTags()
+            tblExpenses$db$commit()
+            private$expense$id
+         }, error = function (cond) {
+            browser()
+            tblExpenses$db$rollback()
+            0
+         })
       }
       ,get = function(all=FALSE) {
          df = tbl$table()
@@ -37,8 +48,11 @@ OBJExpenses = R6::R6Class("JGG.OBJ.EXPENSES"
        tblMethods    = NULL
       ,tblGroups     = NULL
       ,tblCategories = NULL
+      ,tblExpenses   = NULL
       ,expense = list(
-          method = 0
+          id = 0
+         ,date = NULL
+         ,method = 0
          ,group = 0
          ,category = 0
          ,amount = 0
@@ -58,6 +72,15 @@ OBJExpenses = R6::R6Class("JGG.OBJ.EXPENSES"
          
          if (!all) df = df[df$active == 1,]
          df
+      }
+      ,addTags = function() {
+         tags = strsplit(expense$tags, "[,;]")
+         tags = tags[[1]]
+         # Hacerlas unicas
+         if (length(tags) == 0) return()
+         for (idx in 1:length(tags)) {
+            tblTags$add(id = expense$id, tag = tags[idx])
+         }
       }
    )
 )

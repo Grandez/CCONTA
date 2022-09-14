@@ -8,6 +8,7 @@ JGGWEBROOT = R6::R6Class("JGG.INFO.APP"
       session = NULL
      ,root    = NULL
      ,factory    = NULL
+     ,tools      = NULL
      ,print      = function() { message("WEB Singleton") }
      ,initialize = function(mode="prod") {
          private$panels = HashMap$new()
