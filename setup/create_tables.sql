@@ -29,7 +29,7 @@ CREATE TABLE METHODS  (
    ,ACTIVE    TINYINT      DEFAULT 1      
    ,SYNC      TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
    ,PRIMARY KEY (ID)                 -- Primary key
-   ,UNIQUE      (IDBANK, NAME)       -- Avoid duplicate names
+   ,UNIQUE      (IDACCOUNT, NAME)       -- Avoid duplicate names
 );
 
 -- Tabla de Grupos de gastos

@@ -440,12 +440,6 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
           private$changed = list()
           self$current = NULL
        }
-       ,getTblName = function(name) {
-           if (!is.null(DBDict$tables[[name]])) return (DBDict$tables[[name]])
-           if (!is.null(DBDict$user  [[name]])) return (DBDict$user  [[name]])
-           if (!is.null(DBDict$base  [[name]])) return (DBDict$base  [[name]])
-           DBDict$data  [[name]]
-       }
       ,makeWhereGL = function (gt, equal, ...){
           # Primer campo es el que no va por =
           data=list(...)

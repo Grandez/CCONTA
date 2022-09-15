@@ -87,6 +87,12 @@ moduleServer(id, function(input, output, session) {
               ,category = as.integer(input$cboCategories), amount = input$impExpense
               ,note     = input$txtNote,                   tags   = input$txtTags, type = 1)
    }
+   clearForm = function() {
+      updateDateInput    (session, "dtInput",    value=Sys.Date())
+      updateNumericInput (session, "impExpense", value=0)
+      updateTextAreaInput(session, "txtNote", value="")
+      updateTextAreaInput(session, "txtTags", value="")      
+   }
    observeEvent(input$swIncome, {
       if (input$swIncome) {
          shinyjs::hide("div_expense")
@@ -112,15 +118,11 @@ moduleServer(id, function(input, output, session) {
       rc = ifelse(pnl$expense, makeExpense(), makeIncome())
       browser()
       if (rc > 0) {
+         clearForm()
          output$txtMessage = renderText({paste(txtType, "introducido con id ", rc)})
       }
    })
-   observeEvent(input$btnKO, {
-      updateDateInput    (session, "dtInput",    value=Sys.Date())
-      updateNumericInput (session, "impExpense", value=0)
-      updateTextAreaInput(session, "txtNote", value="")
-      updateTextAreaInput(session, "txtTags", value="")
-   })
+   observeEvent(input$btnKO, { clearForm() })
 
 })
 }

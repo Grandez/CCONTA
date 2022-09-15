@@ -3,8 +3,7 @@ BBDDFactory <- R6::R6Class("CCONTA.BBDD.FACTORY"
    ,cloneable = FALSE
    ,lock_class = TRUE
    ,public = list(
-       dict       = DBDict
-      ,print      = function()     { message("Databases Factory") }
+       print      = function()     { message("Databases Factory") }
       ,initialize = function(source="prod") {
          private$DB = connect(source)
          private$objects = HashMap$new()
