@@ -4,47 +4,34 @@ PNLInput = R6::R6Class("CONTA.PNL.INPUT"
   ,portable   = FALSE
   ,cloneable  = FALSE
   ,lock_class = TRUE
+  ,inherit    = PNLBase
   ,active = list(
-     loaded = function(value) {
-      if (missing(value)) {
-         .loaded
-      }
-      else {
-         private$.loaded = value
-         invisible(self)
-      }
-     }
-     ,expense = function(value) {
-      if (missing(value)) {
-         .expense
-      }
-      else {
+      expense = function(value) {
+         if (missing(value)) return (.expense)
          private$.expense = value
-         if (value)  private$obj = private$objExpense
-         if (!value) private$obj = private$objIncome
+         obj$set(type = ifelse(value, 1, -1))
          invisible(self)
       }
-    }
-     
-  )   
-  ,public = list(
-      initialize     = function(id, factory, session) {
-         private$factory = factory
-         private$objExpense = factory$getObject("Expenses")
-         private$objIncome  = factory$getObject("Incomes")
-         private$obj        =  private$objIncome
-         if (self$expense) private$obj = private$objExpense
+   )  
+  ,public     = list(
+      initialize    = function(id, factory, session) {
+         super$initialize(id, factory, session, TRUE) 
+         private$obj = factory$getObject("Movements")
       }
-     ,add        = function(...) { obj$add(...)    }
-     ,loadBudget = function ()   { obj$getBudget() }
+     ,getGroups     = function ()          { obj$getGroups     (ifelse(.expense, 1, -1)) }
+     ,getCategories = function (group = 0) { obj$getCategories (group)                   }
+     ,getMethods    = function ()          { obj$getMethods    ()                        }
+     ,add           = function (...)       { obj$add(...)                                }
+     ,set           = function ( ... ) {
+        obj$set(...)
+        invisible(self)
+     }
+     # ,add        = function(...) { obj$add(...)    }
+     # ,loadBudget = function ()   { obj$getBudget() }
    )
   ,private = list(
-      .loaded  = FALSE
-     ,.expense = TRUE
-     ,objExpense = NULL
-     ,objIncome  = NULL
-     ,factory    = NULL
-     ,obj        = NULL
+      .expense = FALSE
+     ,obj      = NULL
    )
 )
 
@@ -52,24 +39,21 @@ moduleServer(id, function(input, output, session) {
 
    pnl = WEB$getPanel(PNLInput, id, parent, session)
 
-   loadExpense = function() {
-      obj = WEB$factory$getObject("Expenses")
-      df = obj$getMethods()
-      updateSelectInput(session, "cboMethods", choices = WEB$makeCombo(df))
-      df = obj$getGroups()
-      updateSelectInput(session, "cboGroups", choices = WEB$makeCombo(df))
-   }
-   validateExpense = function() {
+   flags = reactiveValues(
+         type    = FALSE
+   ) 
+
+   validate  = function() {
       # dfInput se supone que siempre tiene valor
-      if (as.integer(input$cboMethods) < 1) {
+      if (as.integer(input$cboMethods) == 0) {
          output$txtMessage = renderText({"Invalid Method"})
          return (TRUE)
       }
-      if (as.integer(input$cboGroups) < 1) {
+      if (as.integer(input$cboGroups) == 0) {
          output$txtMessage = renderText({"Invalid Group"})
          return (TRUE)
       }
-      if (as.integer(input$cboCategories) < 1) {
+      if (as.integer(input$cboCategories) == 0) {
          output$txtMessage = renderText({"Invalid Category"})
          return (TRUE)
       }
@@ -79,44 +63,44 @@ moduleServer(id, function(input, output, session) {
       }
       FALSE
    }
-   makeExpense = function() {
-      output$txtMessage = renderText({""})
-      if (validateExpense()) return(0)
-      pnl$add( date     = input$dtInput
-              ,method   = as.integer(input$cboMethods),    group = as.integer(input$cboGroups)
-              ,category = as.integer(input$cboCategories), amount = input$impExpense
-              ,note     = input$txtNote,                   tags   = input$txtTags, type = 1)
-   }
    clearForm = function() {
-      updateDateInput    (session, "dtInput",    value=Sys.Date())
       updateNumericInput (session, "impExpense", value=0)
       updateTextAreaInput(session, "txtNote", value="")
-      updateTextAreaInput(session, "txtTags", value="")      
+      updateTextAreaInput(session, "txtTags", value="")
    }
-   observeEvent(input$swIncome, {
-      if (input$swIncome) {
-         shinyjs::hide("div_expense")
-         shinyjs::show("div_income")
-         pnl$expense = FALSE
-         
-      } else {
-         shinyjs::hide("div_income")
-         shinyjs::show("div_expense")
-         pnl$expense = TRUE
-         loadExpense()
-      }
+   
+   # Flags event
+   observeEvent(flags$type, ignoreInit = TRUE, {
+      df = pnl$getMethods()
+      updateSelectInput(session, "cboMethods", choices = WEB$makeCombo(df))
+      df = pnl$getGroups()
+      updateSelectInput(session, "cboGroups", choices = WEB$makeCombo(df))
    })
-   observeEvent(input$cboGroups, {
-      if (input$cboGroups == -1) return()
-      obj = WEB$factory$getObject("Expenses")
-      obj$setGroup(input$cboGroups)
-      df = obj$getCategories(input$cboGroups)
+   observeEvent(input$swType,        {
+      pnl$expense = input$swType
+      flags$type  = isolate(!flags$type)
+   })
+   observeEvent(input$cboGroups,     {
+      if (input$cboGroups == 0) return()
+      group = as.integer(input$cboGroups)
+      pnl$set(group = group)
+      df = pnl$getCategories(group)
       updateSelectInput(session, "cboCategories", choices = WEB$makeCombo(df))
    })
+   observeEvent(input$cboMethods,    { pnl$set(method   = as.integer(input$cboMethods))    })
+   observeEvent(input$cboCategories, { pnl$set(category = as.integer(input$cboCategories)) })
+   observeEvent(input$dtInput,       { pnl$set(date     = input$dtInput)                   })
+   
    observeEvent(input$btnOK, {
       txtType = ifelse(pnl$expense, "Gasto", "Ingreso")
-      rc = ifelse(pnl$expense, makeExpense(), makeIncome())
-      browser()
+      if (validate()) return()
+      
+      output$txtMessage = renderText({""})
+
+      id = pnl$add( date     = input$dtInput
+                   ,method   = as.integer(input$cboMethods),    group = as.integer(input$cboGroups)
+                   ,category = as.integer(input$cboCategories), amount = input$impExpense
+                   ,note     = input$txtNote,                   tags   = input$txtTags, type = 1)
       if (rc > 0) {
          clearForm()
          output$txtMessage = renderText({paste(txtType, "introducido con id ", rc)})

@@ -1,4 +1,4 @@
-TBLExpenses   = R6::R6Class("CONTA.TBL.EXPENSES"
+TBLMovements    = R6::R6Class("CONTA.TBL.MOVEMENTS"
     ,inherit    = TBLBase
     ,portable   = FALSE
     ,cloneable  = FALSE
@@ -9,7 +9,7 @@ TBLExpenses   = R6::R6Class("CONTA.TBL.EXPENSES"
           }
      )
      ,private = list (
-           tblName = "EXPENSES"
+           tblName = "MOVEMENTS"
           ,key = c("id")
           ,fields = list(
               id       = "ID"
@@ -20,6 +20,7 @@ TBLExpenses   = R6::R6Class("CONTA.TBL.EXPENSES"
              ,amount   = "AMOUNT"
              ,note     = "NOTE"
              ,type     = "TYPE"
+             ,mode     = "MODE"
              ,active   = "ACTIVE"
              ,sync     = "SYNC"
              ,year     = "DATEY"

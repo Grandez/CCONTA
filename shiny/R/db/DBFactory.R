@@ -32,7 +32,6 @@ BBDDFactory <- R6::R6Class("CCONTA.BBDD.FACTORY"
       ,getID      = function()     { private$dbID   }
       ,getTable   = function(name, force = FALSE) {get(name, force) }
       ,get        = function(name, force = FALSE) {
-         if (is.null(tables[name])) stop(paste("Tabla", name, "no definida"))
          if (force) return (createObject(name))
 
          if (is.null(private$objects$get(name))) {
@@ -57,27 +56,6 @@ BBDDFactory <- R6::R6Class("CCONTA.BBDD.FACTORY"
       ,createObject     = function(name) {
           eval(parse(text=paste0("TBL", name, "$new(name, DB)")))
       }
-      ,connectFromList  = function(base) {
-          if (!is.list(base)) {
-               sf   = system.file("extdata", "yatadb.ini", package=packageName())
-               cfg  = YATABase::ini(sf)
-               base = cfg$getSection("base")
-          }
-          connect(base)
-      }
-      ,connectFromTable = function(group,subgroup) {
-          tbl = getTable("Parameters")
-          df = tbl$table(group = group, subgroup = subgroup)
-          data = tidyr::spread(df[,c("name", "value")], name, value)
-          connect(as.list(data))
-      }
-      ,tables = list(
-          Expenses   = "EXPENSES"
-         ,Methods    = "METHODS"
-         ,Groups     = "GROUPS"
-         ,Categories = "CATEGORIES"
-         
-      )
    )
 )
 

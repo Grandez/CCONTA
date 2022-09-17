@@ -2,7 +2,6 @@ OBJTools = R6::R6Class("CONTA.OBJ.TOOLS"
    ,portable   = FALSE
    ,cloneable  = FALSE
    ,lock_class = TRUE
-   ,inherit    = OBJBase
    ,public = list(
       initialize = function() {
       }
@@ -20,10 +19,10 @@ OBJTools = R6::R6Class("CONTA.OBJ.TOOLS"
 # Estos ID se pueen guardar en un int de 4 bytes sin signo:  	2147483647/4294967295
     ,getID = function(block = 0) {
         epoch = as.integer(Sys.time()) - 1577836860 # Restamos el epoch desde 2020-01-01
-        epoch = (epoch %% 1000000)                  # Quitamos el digito significativo
-        epoch = epoch * 100                         # Le damos 2 menos significativos
-        private$.cnt = (private$.cnt + 1) %% 100    # Contador estatico
-        (block * 10^9) + epoch + .cnt
+        epoch = (epoch %% 10000000)                 # Quitamos el digito significativo (7 digitos)
+        epoch = epoch * 10                          # Le damos 1 digito mas (8 digitos)
+        private$.cnt = (private$.cnt + 1) %% 10     # Contador estatico (10 op/seg)
+        (block * 10^9) + epoch + .cnt               # prefijo, total 9 digitos (unsigned int)
     }
       
    )

@@ -31,11 +31,11 @@ OBJFactory = R6::R6Class("JGG.CCONTA.FACTORY"
       ### FACTORY GETTERS
       ######################################################################
       ,getTable    = function(name, force = FALSE) { DBFactory$get(name, force) }
-      ,getObject   = function(name, force = FALSE) {
+      ,getObject   = function(name, force = FALSE, ...) {
+         instance = paste0("OBJ", name, "$new(self, ...)")
          # Pasamos la propia factoria como referencia
-         if (force) return ( eval(parse(text=paste0("OBJ", name, "$new(self)"))))
-         if (is.null(objects$get(name))) private$objects$put(name,
-                                         eval(parse(text=paste0("OBJ", str_to_title(name), "$new(self)"))))
+         if (force) return ( eval(parse(text=instance)))
+         if (is.null(objects$get(name))) private$objects$put(name, eval(parse(text=instance)))
          objects$get(name)
       }
       ,getClass   = function(name, force = FALSE) {

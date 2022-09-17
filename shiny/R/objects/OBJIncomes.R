@@ -2,15 +2,18 @@ OBJIncomes = R6::R6Class("CONTA.OBJ.INCOMES"
    ,portable   = FALSE
    ,cloneable  = FALSE
    ,lock_class = TRUE
-   ,inherit    = OBJBase
+   ,inherit    = OBJMovements
    ,public = list(
       initialize = function(factory) {
-         super$initialize(factory)
-         # private$tblMethods    = factory$getTable("Methods")
-         # private$tblGroups     = factory$getTable("Groups")
-         # private$tblCategories = factory$getTable("Categories")
-         # private$tblExpenses   = factory$getTable("Expenses")
+         super$initialize(factory, 2, TRUE) # 1 = Ingresos 
       }
+      ,get = function(mask = 0, all = FALSE) {
+         df = tblIncomes$table()
+         if (!all) df = df[df$active == 1,]
+         if (mask > 0) df = df %>% filter(bitwAnd(type, mask) > 0)
+         df
+      }
+      
       # ,getMethods    = function(all=FALSE)          { getTable(tblMethods, all) }
       # ,getGroups     = function(all=FALSE)          { getTable(tblGroups,  all) }
       # ,getCategories = function(group, all = FALSE) { getTable(tblCategories, all, idGroup=as.integer(group)) }
@@ -46,9 +49,9 @@ OBJIncomes = R6::R6Class("CONTA.OBJ.INCOMES"
       # }
    )
    ,private = list(
-      #  tblMethods    = NULL
-      # ,tblGroups     = NULL
-      # ,tblCategories = NULL
+       tblMethods    = NULL
+      ,tblGroups     = NULL
+      ,tblCategories = NULL
       # ,tblExpenses   = NULL
       # ,expense = list(
       #     id = 0

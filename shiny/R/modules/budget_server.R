@@ -19,7 +19,8 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
       initialize     = function(id, factory, session) {
          private$factory = factory
          # super$initialize(id, parent, session)
-         private$obj = OBJBudget$new(factory)
+         private$obj = factory$getObject("Frame")
+         #private$obj = OBJBudget$new(factory)
       }
      ,loadBudget = function () { obj$getBudget() }
    )

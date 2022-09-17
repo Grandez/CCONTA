@@ -17,6 +17,7 @@ TBLGroups   = R6::R6Class("CONTA.TBL.GROUPS"
               ,descr  = "DESCR"    
               ,active = "ACTIVE"   
               ,sync   = "SYNC"
+              ,type   = "TYPE"
          )
      )
 )

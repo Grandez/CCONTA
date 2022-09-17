@@ -5,7 +5,7 @@ tagList(shinyjs::useShinyjs()
    
 ,navbarPage("Navbar!", id="mainMenu"
   ,tabInputUI("Entrada", "input")
-  ,tabGeneralUI("General", "general")
+  ,tabStatusUI("Situacion", "status")
   ,tabBudgetUI("Presupuesto", "budget")
   # ,tabPanel("Hoja2")
   # ,tabPanel("Hoja3")

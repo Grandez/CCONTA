@@ -4,7 +4,8 @@ OBJBase = R6::R6Class("JGG.OBJ.BASE"
    ,lock_class = FALSE
    ,public = list(
        factory = NULL
-      ,initialize = function(factory) {
+      ,initialize = function(factory, child=FALSE) {
+         if (!child) stop("OBJBase is an abstract class")
          self$factory = factory
       }
    )

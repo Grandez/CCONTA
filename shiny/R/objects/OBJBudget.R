@@ -5,6 +5,7 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
    ,inherit    = OBJBase
    ,public = list(
       initialize = function(factory) {
+         super$initialize(factory, TRUE)
          private$tblBudget     = factory$getTable("Budget")
          private$tblGroups     = factory$getTable("Groups")
          private$tblCategories = factory$getTable("Categories")
