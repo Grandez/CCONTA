@@ -14,7 +14,6 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
          private$objMovements = factory$getObject("Movements")
       }
      ,refreshData = function() {
-        browser()
         frmExpenses$set(objMovements$getExpenses())
         frmIncomes$set (objMovements$getIncomes ())
         totExpenses = frmExpenses$getTotal()
@@ -39,7 +38,6 @@ moduleServer(id, function(input, output, session) {
 
    refresh = function () {
       pnl$refreshData()
-      browser()
       output$tblSummary  = renderReactable({ pnl$getSummary(ns("tblSummary")) })
       output$tblIncomes  = renderReactable({ pnl$getIncomes (ns("tblIncomes")) })
       output$tblExpenses = renderReactable({ pnl$getExpenses(ns("tblExpenses")) })

@@ -4,12 +4,12 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
    ,lock_class = TRUE
    ,public = list(
        name = "CCONTA"
-       ,initialize = function(data) {
+      ,initialize = function(data) {
            private$map      = HashMap$new()
            private$dbInfo   = data
            private$connRead = connect()
        }
-      ,finalize = function() {
+      ,finalize   = function() {
           if (!is.null(connTran)) commit()
           disconnect(connTran)
           disconnect(connRead)
@@ -18,7 +18,7 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
           db = ifelse(is.null(connRead), "No Connection", paste0(dbInfo$name, " (", dbInfo$dbname, ")"))
           message(db, ": MariaDB Database")
       }
-      ,isValid = function(conn) {
+      ,isValid    = function(conn) {
           if (missing(conn)) conn = connRead
           RMariaDB::dbIsValid(conn)
       }
@@ -134,7 +134,7 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
          sql = paste("INSERT INTO ", table, "(", cols, ") VALUES (", marks, ")")
          execute(sql, data, isolated)
       }
-      ,count = function(table, filter) {
+      ,count      = function(table, filter) {
            sql = paste("SELECT COUNT(*) FROM ", table)
            if (!missing(filter) && !(is.null(filter))) {
                clause = paste(names(filter), "= ? AND", collapse=" " )

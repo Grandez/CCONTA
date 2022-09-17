@@ -49,7 +49,7 @@ CREATE TABLE GROUPS  (
 -- Tabla de Categorias de gasto
 DROP TABLE  IF EXISTS CATEGORIES CASCADE;
 CREATE TABLE CATEGORIES  (
-    IDGROUP   INT UNSIGNED  NOT NULL   -- ID Grupo
+    IDGROUP   INT           NOT NULL   -- ID Grupo
    ,ID        INT UNSIGNED  NOT NULL   -- ID Cuenta Cuenta: IInnnmmm - II Origen / nnn grupo / mmm Cuenta    
    ,NAME      VARCHAR(255)  NOT NULL   -- Nombre de la cuenta
    ,DESCR     TEXT   
@@ -63,7 +63,7 @@ CREATE TABLE CATEGORIES  (
 DROP TABLE  IF EXISTS BUDGET CASCADE;
 CREATE TABLE BUDGET    (
     ID         INT UNSIGNED       NOT NULL           COMMENT "ID Unico prefijado"
-   ,IDGROUP    INT UNSIGNED       NOT NULL           COMMENT "ID del grupo"
+   ,IDGROUP    INT                NOT NULL           COMMENT "ID del grupo"
    ,IDCATEGORY INT UNSIGNED       NOT NULL           COMMENT "ID de la categoria"
    ,IDMETHOD   INT UNSIGNED                          COMMENT "ID del metodo de pago"
    ,DATEY      SMALLINT     NOT NULL           COMMENT "Year del presupuesto"
@@ -81,12 +81,12 @@ CREATE TABLE BUDGET    (
 
 DROP TABLE  IF EXISTS MOVEMENTS CASCADE;
 CREATE TABLE  MOVEMENTS  (
-    ID         INT UNSIGNED       NOT NULL -- Unique ID I + timestamp
-   ,CDATE      DATE         NOT NULL -- Fecha del gasto
-   ,IDMETHOD   INT UNSIGNED DEFAULT 0 -- Fuente del gasto
-   ,IDGROUP    INT UNSIGNED       NOT NULL -- Grupo
-   ,IDCATEGORY INT UNSIGNED       NOT NULL -- Fuente del gasto   
-   ,AMOUNT     DECIMAL(7,3) NOT NULL -- Importe
+    ID         INT UNSIGNED   NOT NULL -- Unique ID I + timestamp
+   ,CDATE      DATE           NOT NULL -- Fecha del gasto
+   ,IDMETHOD   INT UNSIGNED   DEFAULT 0 -- Fuente del gasto
+   ,IDGROUP    INT            NOT NULL -- Grupo
+   ,IDCATEGORY INT UNSIGNED   NOT NULL -- Fuente del gasto   
+   ,AMOUNT     DECIMAL(7,3)   NOT NULL -- Importe
    ,NOTE       VARCHAR(255)          -- Comentarios
    ,TYPE       TINYINT      DEFAULT 0  COMMENT 'Gastos: Positivo, Ingresos: Negativo. Real, Previsto, credito, amortizacion,etc'
    ,MODE       TINYINT      DEFAULT 0  COMMENT 'Tipo de movimiento: Real, Previsto, credito, amortizacion,etc'

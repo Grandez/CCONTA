@@ -47,14 +47,11 @@ OBJFrameIncomes = R6::R6Class("CONTA.OBJ.FRAME.INCOMES"
          dfg = tblGroups$table(type = -1, active = 1)
          dfg = dfg[,c("id","name")]
          colnames(dfg) = c("idGroup", "Group")
-         dfg$idGroup = as.integer(dfg$idGroup)
-         
-         dfc = tblCategories$table()
-         dfc = dfc[dfc$active == 1,]
+
+         dfc = tblCategories$table(active = 1)
          dfc = dfc[,c("idGroup", "id","name")]
+         dfc = dfc[dfc$idGroup < 0, ]
          colnames(dfc) = c("idGroup", "idCategory", "Category")
-         dfc$idGroup    = as.integer(dfc$idGroup)
-         dfc$idCategory = as.integer(dfc$idCategory)
          dfc = as_tibble(dfc)
          df = dplyr::left_join(dfc, dfg, by = "idGroup")
          df[,as.character(seq(1,12))] = 0

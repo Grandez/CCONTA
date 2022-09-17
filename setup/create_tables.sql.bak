@@ -103,9 +103,6 @@ CREATE TABLE  MOVEMENTS  (
    ,INDEX       (TYPE)
 );
 
--- Tabla de Ingresos
-DROP TABLE  IF EXISTS INCOMES CASCADE;
-
 -- Tabla de Tags
 -- Fuera del gasto para no tener limite
 DROP TABLE  IF EXISTS TAGS CASCADE;
