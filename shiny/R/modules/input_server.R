@@ -101,9 +101,9 @@ moduleServer(id, function(input, output, session) {
                    ,method   = as.integer(input$cboMethods),    group = as.integer(input$cboGroups)
                    ,category = as.integer(input$cboCategories), amount = input$impExpense
                    ,note     = input$txtNote,                   tags   = input$txtTags, type = 1)
-      if (rc > 0) {
+      if (id > 0) {
          clearForm()
-         output$txtMessage = renderText({paste(txtType, "introducido con id ", rc)})
+         output$txtMessage = renderText({paste(txtType, "introducido con id ", id)})
       }
    })
    observeEvent(input$btnKO, { clearForm() })

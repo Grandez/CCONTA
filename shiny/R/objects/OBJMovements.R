@@ -74,7 +74,7 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          tags = strsplit(mov$tags, "[,;]")
          tags = tags[[1]]
          grp = dfGroups[dfGroups$id == mov$idGroup, "name"]
-         dfc = tblCategories$table(idGroup = mov$idGroup, id = mov$idCategory)
+         dfc = tblCategories$table(idGroup = mov$group, id = mov$category)
          cat = dfc[1, "name"]
          tags = c(grp, cat, tags)
          tags = unique(tags)
