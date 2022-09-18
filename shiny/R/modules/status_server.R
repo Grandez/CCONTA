@@ -14,6 +14,7 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
          private$objMovements = factory$getObject("Movements")
       }
      ,refreshData = function() {
+        browser()
         frmExpenses$set(objMovements$getExpenses())
         frmIncomes$set (objMovements$getIncomes ())
         totExpenses = frmExpenses$getTotal()

@@ -73,13 +73,13 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
       ,addTags = function() {
          tags = strsplit(mov$tags, "[,;]")
          tags = tags[[1]]
-         grp = dfGroups[dfGroups$id == mov$idGroup, "name"]
+         grp = dfGroups[dfGroups$id == mov$group, "name"]
          dfc = tblCategories$table(idGroup = mov$group, id = mov$category)
          cat = dfc[1, "name"]
          tags = c(grp, cat, tags)
          tags = unique(tags)
          for (idx in 1:length(tags)) {
-            tblTags$add(id = mov$id, tag = tags[idx])
+            tblTags$add(list(id = mov$id, tag = tags[idx]))
          }
       }
    )

@@ -82,6 +82,7 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
           if (!is.null(params)) names(params) = NULL
           tryCatch({ RMariaDB::dbGetQuery(getConn(), qry, params=params)
               }, error = function (cond) {
+                 browser()
                 SQLError( "QUERY Error",  origin=cond$message
                                ,action="query", rc = getSQLCode(cond)
                                ,sql=qry)
