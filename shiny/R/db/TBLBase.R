@@ -267,7 +267,6 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
           setColNames(db$query(sql, filter$values))
       }
       ,add     = function(data, isolated=FALSE) {
-         browser()
           if (missing(data)) data = self$current
           if (is.data.frame(data)) data = as.list.data.frame(data)
 
