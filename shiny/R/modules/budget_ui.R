@@ -1,6 +1,5 @@
-tabBudgetUI <- function(label, id) {
-    ns <- NS(id)
-    
-    tabPanel(label, value=id, reactableOutput(ns("tblBudget"))
-    )
+modBudgetInput = function(id,title) {
+   ns <- NS(id)
+   main = tagList(reactableOutput(ns("tblBudget")))
+   list(left=NULL, main=main, right=NULL)    
 }

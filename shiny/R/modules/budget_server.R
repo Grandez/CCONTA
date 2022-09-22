@@ -1,5 +1,5 @@
-mod_budget_server <- function(id, session) {
-ns = NS(id)
+modBudgetServer = function(id, full, pnlParent, parent=NULL) {
+   ns = NS(id)
 PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
   ,portable   = FALSE
   ,cloneable  = FALSE
@@ -30,7 +30,7 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
      ,obj     = NULL
    )
 )
-
+   
 moduleServer(id, function(input, output, session) {
     pnl = WEB$getPanel(PNLBudget, id, NULL, session)
 
