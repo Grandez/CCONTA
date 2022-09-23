@@ -25,7 +25,7 @@ OBJFrame = R6::R6Class("CONTA.OBJ.FRAME"
       ,add = function (data) {
          if (nrow(data) == 0) return (invisible(self))
          df = data %>% group_by (group, category, month) %>% summarise(amount = sum(amount))
-         df = as.data.frame(df %>% tidyr::spread(month, amount))
+         df = as.data.frame(df %>% tidyr::spread(month, amount, fill=0))
          
          # dfData: Meses empiezan en la columna 5 (4 + mes) - df empiezan en la columna 3
          for (row in 1:nrow(df)) {

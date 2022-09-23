@@ -25,9 +25,8 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
       ,getIncomes    = function ()          { getMovements (-1) }
       ,getMovements  = function (type = 0)  {
          if (is.null(dfMov)) private$dfMov = tblMovements$table(active = 1)
-         if (type > 0) df = dfMov[dfMov$type > 0,]
-         if (type < 0) df = dfMov[dfMov$type < 0,]
-         df
+         if (type > 0) return (dfMov[dfMov$type > 0,])
+         dfMov[dfMov$type < 0,]
       }
       ,set = function (...) {
           private$mov = jgg_list_merge(mov, list(...))
