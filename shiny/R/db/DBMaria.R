@@ -15,21 +15,21 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
           disconnect(connRead)
        }
       ,print      = function() {
-          db = ifelse(is.null(connRead), "No Connection", paste0(dbInfo$name, " (", dbInfo$dbname, ")"))
+          db = ifelse(is.null(connRead), "No Connection", paste0(dbInfo$name, " (", dbInfo$dbName, ")"))
           message(db, ": MariaDB Database")
       }
       ,isValid    = function(conn) {
           if (missing(conn)) conn = connRead
           RMariaDB::dbIsValid(conn)
       }
-      ,getName    = function ()     { dbInfo$dbname }
+      ,getName    = function ()     { dbInfo$dbName }
       ,connect    = function ()     {
           tryCatch({RMariaDB::dbConnect( drv = RMariaDB::MariaDB()
                                         ,username = dbInfo$user
                                         ,password = dbInfo$password
                                         ,host     = dbInfo$host
                                         ,port     = dbInfo$port
-                                        ,dbname   = dbInfo$dbname
+                                        ,dbname   = dbInfo$dbName
                     )
           },error = function(cond) {
               browser()
