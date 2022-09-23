@@ -4,35 +4,21 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
   ,portable   = FALSE
   ,cloneable  = FALSE
   ,lock_class = TRUE
-  ,active = list(
-     loaded = function(value) {
-      if (missing(value)) {
-         .loaded
-      }
-      else {
-         private$.loaded = value
-         invisible(self)
-      }
-    }
-  )   
+  ,inherit    = PNLBase   
   ,public = list(
-      initialize     = function(id, factory, session) {
-         private$factory = factory
-         # super$initialize(id, parent, session)
+      initialize     = function (id, session) {
+         super$initialize(id, session, TRUE)
          private$obj = factory$getObject("Frame")
-         #private$obj = OBJBudget$new(factory)
       }
      ,loadBudget = function () { obj$getBudget() }
    )
   ,private = list(
-     .loaded  = FALSE
-     ,factory = NULL
-     ,obj     = NULL
+      obj     = NULL
    )
 )
    
 moduleServer(id, function(input, output, session) {
-    pnl = WEB$getPanel(PNLBudget, id, NULL, session)
+    pnl = WEB$getPanel(id, PNLBudget, session)
 
     jscode = function() {
        data = paste("{ row: rowInfo.index + 1, colName: colInfo.id")

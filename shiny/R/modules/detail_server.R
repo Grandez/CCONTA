@@ -6,11 +6,8 @@ PNLDetail = R6::R6Class("CONTA.PNL.DETAIL"
   ,lock_class = TRUE
   ,inherit    = PNLBase 
   ,public = list(
-      initialize     = function (id, factory, session) {
-          super$initialize(id, factory, session, TRUE)
-         # private$frmSummary   = factory$getObject("FrameSummary",  force = TRUE)
-         # private$frmIncomes   = factory$getObject("FrameIncomes",  force = TRUE)
-         # private$frmExpenses  = factory$getObject("FrameExpenses", force = TRUE)
+      initialize     = function (id, session) {
+          super$initialize(id, session, TRUE)
           private$objMovements = factory$getObject("Movements")
       }
      ,refreshData = function() {
@@ -35,7 +32,7 @@ PNLDetail = R6::R6Class("CONTA.PNL.DETAIL"
 )
 
 moduleServer(id, function(input, output, session) {
-   pnl = WEB$getPanel(PNLDetail, id, NULL, session)
+   pnl = WEB$getPanel(id, PNLDetail, session)
    # 
    refresh = function () {
       pnl$refreshData()

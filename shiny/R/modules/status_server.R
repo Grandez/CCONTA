@@ -6,14 +6,15 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
   ,lock_class = TRUE
   ,inherit    = PNLBase 
   ,public = list(
-      initialize     = function (id, factory, session) {
-         super$initialize(id, factory, session, TRUE)
+      initialize     = function (id, session) {
+         super$initialize(id, session, TRUE)
          private$frmSummary   = factory$getObject("FrameSummary",  force = TRUE)
          private$frmIncomes   = factory$getObject("FrameIncomes",  force = TRUE)
          private$frmExpenses  = factory$getObject("FrameExpenses", force = TRUE)
          private$objMovements = factory$getObject("Movements")
       }
      ,refreshData = function() {
+        browser()
         frmExpenses$set(objMovements$getExpenses())
         frmIncomes$set (objMovements$getIncomes ())
         totExpenses = frmExpenses$getTotal()
@@ -34,7 +35,8 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
 )
 
 moduleServer(id, function(input, output, session) {
-   pnl = WEB$getPanel(PNLStatus, id, NULL, session)
+   browser()
+   pnl = WEB$getPanel(id, PNLStatus, session)
 
    refresh = function () {
       pnl$refreshData()

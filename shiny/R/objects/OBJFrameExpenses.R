@@ -55,6 +55,7 @@ OBJFrameExpenses = R6::R6Class("CONTA.OBJ.FRAME.EXPENSES"
          dfc = as_tibble(dfc)
          df = dplyr::left_join(dfc, dfg, by = "idGroup")
          df[,as.character(seq(1,12))] = 0
+         df = df %>% mutate(row = row_number())
          private$dfBase = df
          private$dfData = df
     }   
