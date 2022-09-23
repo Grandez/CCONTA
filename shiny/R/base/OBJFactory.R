@@ -30,7 +30,7 @@ OBJFactory = R6::R6Class("JGG.CCONTA.FACTORY"
       ######################################################################
       ### FACTORY GETTERS
       ######################################################################
-      ,getTable    = function(name, force = FALSE) { DBFactory$get(name, force) }
+      ,getTable    = function(name, force = FALSE) { DBFactory$getTable(name, force) }
       ,getObject   = function(name, force = FALSE, ...) {
          instance = paste0("OBJ", name, "$new(self, ...)")
          # Pasamos la propia factoria como referencia
