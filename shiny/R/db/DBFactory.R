@@ -4,34 +4,17 @@ BBDDFactory <- R6::R6Class("CCONTA.BBDD.FACTORY"
    ,lock_class = TRUE
    ,public = list(
        print      = function()     { message("Databases Factory") }
-      ,initialize = function(source="prod") {
-         private$DB = connect(source)
-         private$objects = HashMap$new()
-          # data = "base"
-          # if (!missing(base)) data = base
-          # private$lstdb$dbBase  = connectFromList(data)
-          # private$lstdb$dbData  = connectFromTable(10, 101)
-          # private$lstdb$dbUser  = connectFromTable(10, 102)
-       }
-      ,finalize   = function()     {
-         message("DBFactory finalize")
-         DB$finalize()
-      }
-      ,getDBBase  = function()     { lstdb$dbBase }
-      ,getDBData  = function()     { lstdb$dbData }
-      ,getDBUser  = function()     { lstdb$dbUser }
-      ,getDB      = function()     { lstdb$dbAct  }
-      ,setDB      = function(info) {
+      ,initialize = function(source="prod") { private$DB = connect(source) }
+      ,finalize   = function()     { DB$finalize()  }
+      ,getDB      = function()     { private$DB     }
+      ,getDBInfo  = function()     { private$dbInfo }
+      ,setDB      = function(dbname) {
           if (missing(info)) stop("Se ha llamado a setDB sin datos")
-          if (!is.null(lstdb$dbAct)) lstdb$dbAct$disconnect()
-          private$lstdb$dbAct = connect(info)
-          private$objects     = YATABase::map()
-          private$dbID        = info$id
+          if (!is.null(DB) && dbname != dbInfo$dbName) DB$disconnect()
+          if (dbname != dbInfo$dbName) private$DB = connect(dbname)
           invisible(self)
       }
-      ,getID      = function()     { private$dbID   }
-      ,getTable   = function(name, force = FALSE) {get(name, force) }
-      ,get        = function(name, force = FALSE) {
+      ,getTable   = function(name, force = FALSE) {
          if (force) return (createObject(name))
 
          if (is.null(private$objects$get(name))) {
@@ -42,16 +25,18 @@ BBDDFactory <- R6::R6Class("CCONTA.BBDD.FACTORY"
       }
    )
    ,private = list(
-       lstdb   = list()
-      ,DB      = NULL
-      ,dbID    = NULL
+       DB      = NULL
       ,objects = NULL
+      ,dbInfo  = list( username = "CCONTA"
+                      ,password = "cconta"
+                      ,host     = "127.0.0.1"
+                      ,port     =  3306
+                      ,dbName   = "CCONTA") 
       ,connect          = function(source) {
          dbname = ifelse(source == "test", "CCONTA_TEST", "CCONTA")
-         info = list( username = "CCONTA",    password = "cconta"
-                                 ,host     = "127.0.0.1", port     =  3306
-                                 ,dbname   = dbname)
-        MARIADB$new(info)
+         private$dbInfo$dbName = dbname
+         private$objects = HashMap$new()
+         MARIADB$new(dbInfo)
       }
       ,createObject     = function(name) {
           eval(parse(text=paste0("TBL", name, "$new(name, DB)")))
