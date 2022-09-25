@@ -23,20 +23,20 @@ OBJFrame = R6::R6Class("CONTA.OBJ.FRAME"
          invisible(self)
       }
       ,add = function (data) {
-         browser()
          if (nrow(data) == 0) return (invisible(self))
-         df = data %>% group_by (group, category, month) %>% summarise(amount = sum(amount))
+         df = data %>% group_by (idGroup, idCategory, month) %>% summarise(amount = sum(amount), .groups = "keep")
          df = as.data.frame(df %>% tidyr::spread(month, amount, fill=0))
          
          # dfData: Meses empiezan en la columna 5 (4 + mes) - df empiezan en la columna 3
          for (row in 1:nrow(df)) {
-            dfRow = dfData %>% filter(idGroup == df[row, "group"] & idCategory == df[row,"category"])
+            dfRow = dfData %>% filter(idGroup == df[row, "idGroup"] & idCategory == df[row,"idCategory"])
             tgt = nrow(dfRow)
             if (tgt != 1) stop("Datos duplicados en dfBase para agrupar datos")
-            tgt = dfRow[1,"row"]
+            tgt = as.integer(dfRow[1,"row"])
             meses = colnames(df)
             for (mes in 3:length(meses)) {
-               private$dfData[tgt, 4 + as.integer(meses[mes])] = dfData[tgt, 4 + as.integer(meses[mes])] + df[row, mes]
+               col = 4 + as.integer(meses[mes])
+               private$dfData[tgt, col] = dfData[tgt, col] + df[row, mes]
             }
          }
       }

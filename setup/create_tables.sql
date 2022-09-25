@@ -108,6 +108,7 @@ CREATE TABLE  MOVEMENTS  (
 DROP TABLE  IF EXISTS TAGS CASCADE;
 CREATE TABLE TAGS  (
     ID        INT UNSIGNED       NOT NULL -- ID del gasto
+   ,SEQ       INT          NOT NULL  COMMENT 'Recuperar por orden los tags'
    ,TAG       VARCHAR(255) NOT NULL -- Tag
-   ,PRIMARY KEY (ID, TAG)         -- Primary key
+   ,PRIMARY KEY (ID, SEQ, TAG)         -- Primary key
 );

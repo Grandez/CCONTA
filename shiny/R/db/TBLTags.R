@@ -13,6 +13,7 @@ TBLTags   = R6::R6Class("CONTA.TBL.TAGS"
           ,key = c("id", "tag")
           ,fields = list(
               id       = "ID"
+             ,seq      = "SEQ"
              ,tag      = "TAG"
             )
      )

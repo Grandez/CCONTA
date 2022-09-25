@@ -24,6 +24,13 @@ JGGWEBROOT = R6::R6Class("JGG.INFO.APP"
         private$args = list(...)
         super$getPanel(id,object,session)
      }
+     ,makeCombo = function(df, sorted=TRUE, id="id", name="name") {
+         data = as.list(df[,id])
+         names(data) = df[,name]
+        if (sorted) data = data[order(names(data))]
+        data
+    }
+     
   )
  ,private = list(
     args = NULL

@@ -24,11 +24,9 @@ OBJTools = R6::R6Class("CONTA.OBJ.TOOLS"
         private$.cnt = (private$.cnt + 1) %% 10     # Contador estatico (10 op/seg)
         (block * 10^9) + epoch + .cnt               # prefijo, total 9 digitos (unsigned int)
     }
-      
    )
    ,private = list(
        .cnt         = 0 # Contador para id
-      ,tblGroups     = NULL
    )
 )
 

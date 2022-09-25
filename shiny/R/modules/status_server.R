@@ -14,7 +14,6 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
          private$objMovements = factory$getObject("Movements")
       }
      ,refreshData = function() {
-        browser()
         frmExpenses$set(objMovements$getExpenses())
         frmIncomes$set (objMovements$getIncomes ())
         totExpenses = frmExpenses$getTotal()
@@ -35,7 +34,6 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
 )
 
 moduleServer(id, function(input, output, session) {
-   browser()
    pnl = WEB$getPanel(id, PNLStatus, session)
 
    refresh = function () {
