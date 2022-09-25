@@ -98,8 +98,8 @@ moduleServer(id, function(input, output, session) {
       output$txtMessage = renderText({""})
 
       id = pnl$add( date     = input$dtInput
-                   ,method   = as.integer(input$cboMethods),    group = as.integer(input$cboGroups)
-                   ,category = as.integer(input$cboCategories), amount = input$impExpense
+                   ,idMethod   = as.integer(input$cboMethods),    idGroup = as.integer(input$cboGroups)
+                   ,idCategory = as.integer(input$cboCategories), amount = input$impExpense
                    ,note     = input$txtNote,                   tags   = input$txtTags, type = 1)
       if (id > 0) {
          clearForm()
