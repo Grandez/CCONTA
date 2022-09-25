@@ -108,7 +108,7 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          tags = c(grp, cat, tags)
          tags = unique(tags)
          for (idx in 1:length(tags)) {
-            tblTags$add(list(id = mov$id, tag = tags[idx]))
+            tblTags$add(list(id = mov$id, seq = idx, tag = tags[idx]))
          }
       }
       ,getMethodName = function (record) {
