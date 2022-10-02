@@ -1,9 +1,17 @@
 -- use CCONTA;
 
--- -------------------------------------------------------------------
--- La base de datos BASE contiene las tablas que son comunes 
--- Y la configuracion inicial
--- -------------------------------------------------------------------
+
+DROP TABLE  IF EXISTS PARAMETERS CASCADE;
+CREATE TABLE PARAMETERS  (
+    GRUPO    INTEGER     NOT NULL -- Grupo, no usamos GROUP para evitar problemas de nombres
+   ,SUBGROUP INTEGER     NOT NULL -- Parametro
+   ,BLOCK    INTEGER     DEFAULT 0
+   ,ID       INTEGER     NOT NULL -- Parametro
+   ,TYPE     TINYINT     NOT NULL -- Tipo de parametro
+   ,NAME     VARCHAR(32) NOT NULL
+   ,VALUE    VARCHAR(64) NOT NULL
+   ,PRIMARY KEY ( GRUPO, SUBGROUP, BLOCK, ID ) USING BTREE
+);
 
 -- Tabla de Bancos y cuentas
 DROP TABLE  IF EXISTS ACCOUNTS CASCADE;
@@ -111,4 +119,21 @@ CREATE TABLE TAGS  (
    ,SEQ       INT          NOT NULL  COMMENT 'Recuperar por orden los tags'
    ,TAG       VARCHAR(255) NOT NULL -- Tag
    ,PRIMARY KEY (ID, SEQ, TAG)         -- Primary key
+);
+
+-- Tabla de Transferencias
+DROP TABLE  IF EXISTS TRANSFERS CASCADE;
+CREATE TABLE TRANSFERS  (
+    ID         INT UNSIGNED   NOT NULL COMMENT 'Unique ID'
+   ,DATEOPER   DATE           NOT NULL COMMENT 'Fecha de operacion de la transferencia'
+   ,DATEVAL    DATE           NOT NULL COMMENT 'Fecha de valor la transferencia'   
+   ,ORIGIN     INT UNSIGNED   NOT NULL COMMENT 'Cuenta origen'   
+   ,TARGET     INT UNSIGNED   NOT NULL COMMENT 'Cuenta destino'   
+   ,AMOUNT     DECIMAL(7,3)   NOT NULL COMMENT 'Importe de la transferencia'   
+   ,NOTE       VARCHAR(255)            COMMENT 'Comentarios'   
+   ,ACTIVE    TINYINT      DEFAULT 1      
+   ,SYNC      TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
+   ,PRIMARY KEY (ID)                 -- Primary key
+   ,INDEX       (ORIGIN, DATEOPER)  
+   ,INDEX       (TARGET, DATEVAL)
 );

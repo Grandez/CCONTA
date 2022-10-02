@@ -103,12 +103,16 @@ moduleServer(id, function(input, output, session) {
                         ,selected = "0")
    }
    prepareData = function (df) {
-      colsHide = c("id")
+      row_style = function(index) {
+         if (df[index, "type"] == 1) list(fontWeight = "bold")
+      }
+      mtheme = reactableTheme(cellPadding = "0px 0px")   
+      colsHide = c("id", "type")
       cols = lapply(colsHide, function(col) colDef(show = FALSE))
       names(cols) = colsHide
       #cols$tags = colDef(width="auto")
-      df = df[,c("id", "date","group","category","method","amount","note","tags")]
-      reactable::reactable(df, columns=cols, width="100%", pagination = FALSE, onClick = jscode(ns("tblDetail")) )
+      df = df[,c("id", "type", "date","group","category","method","amount","note","tags")]
+      reactable::reactable(df, rowStyle = row_style, theme = mtheme, columns=cols, width="100%", pagination = FALSE, onClick = jscode(ns("tblDetail")) )
    }
     jscode = function(idTable) {
        data = paste("{ row: rowInfo.index + 1, colName: colInfo.id")
@@ -125,12 +129,21 @@ moduleServer(id, function(input, output, session) {
     }
    
    observeEvent(flags$refresh, ignoreInit = TRUE, {
+      browser()
       df = pnl$getData()
+      if (nrow(df) == 0) {
+          shinyjs::show("nodata")
+          shinyjs::hide("data")
+      } else {
+          shinyjs::show("data")
+          shinyjs::hide("nodata")
+      }
       output$tblDetail  = renderReactable({ prepareData(df) })
    })
-   observeEvent(input$radType,   { 
+   observeEvent(input$radType, ignoreInit = TRUE,   { 
       pnl$setFilter(type = as.integer(input$radType))
       loadGroups() 
+      flags$refresh  = isolate(!flags$refresh)
    })
    observeEvent(input$cboGroups, {
       pnl$setFilter(group = as.integer(input$cboGroups))
@@ -145,8 +158,11 @@ moduleServer(id, function(input, output, session) {
       flags$refresh  = isolate(!flags$refresh)
    })
    observeEvent(input$tblDetail, {
-      shinyjs::show("form_modal")
-      output$form_modal = renderUI({movementUI(paste0(id, "_form"), insert = FALSE) })
+      browser()
+      shinyjs::show("form_container")
+      output$form = renderUI({movementUI(paste0(id, "_form"), insert = FALSE) })
+      #output$form = renderUI({tagList(h1("Titulo 1"), h2("Titulo 2")) })
+         #movementUI(paste0(id, "_form"), insert = FALSE) })
 #       showModal(modalDialog(movementUI(id, insert = FALSE),
 #   title = NULL,
 #   footer = modalButton("Dismiss"),
@@ -155,6 +171,7 @@ moduleServer(id, function(input, output, session) {
 #   fade = TRUE
 # ))
    })
+   
    
 })
 }

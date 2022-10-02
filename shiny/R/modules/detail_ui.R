@@ -1,8 +1,13 @@
 modDetailInput <- function (id, title) {
     ns <- NS(id)
     main = tagList(#box(solidHeader = TRUE, title = "Filtros", collapsible = TRUE)
-         guiBox(ns("boxPlot"), "Grafico")
-         ,reactableOutput(ns("tblDetail"))
+         shinyjs::hidden(tags$div(id=ns("nodata")
+            ,tags$img(src="img/warning00.png"), h2("No hay datos")
+         ))
+         ,tags$div(id=ns("data")   
+              ,guiBox(ns("boxPlot"), "Grafico")
+             ,reactableOutput(ns("tblDetail"))
+         )
        )
     left = tagList(awesomeRadio( inputId = ns("radType"), label = "Tipo", inline = TRUE 
                                 ,choices = c("Todo"=0, "Gastos"=1, "Ingresos"=-1),selected = "0")

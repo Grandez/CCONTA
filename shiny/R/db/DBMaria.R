@@ -50,8 +50,12 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
           }
           NULL
       }
-      ,begin      = function() {
-          if (!is.null(connTran)) {
+      ,begin      = function(conn) {
+          if (!missing(conn)) {
+              RMariaDB::dbBegin(conn)
+              return (invisible(self))
+          }
+          if (!is.null(private$connTran)) {
               SQLError( "Transacciones activas", origin=NULL
                              ,action="begin", rc = getSQLCode(cond)
                              ,sql="begin")
@@ -60,8 +64,13 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
           RMariaDB::dbBegin(connTran)
           invisible(self)
       }
-      ,commit     = function() {
-          if (is.null(private$connTran)) {
+      ,commit     = function(conn) {
+          if (!missing(conn)) {
+             RMariaDB::dbCommit(conn)
+             disconnect(conn)
+             return (invisible(self))
+          }
+          if (is.null(connTran)) {
               warning("Commit sin transaccion")
               return (invisible(self))
           }
@@ -69,7 +78,12 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
           private$connTran = disconnect(connTran)
           invisible(self)
       }
-      ,rollback   = function() {
+      ,rollback   = function(conn) {
+          if (!missing(conn)) {
+             RMariaDB::dbRollback(conn)
+             disconnect(conn)
+             return (invisible(self))
+          }
           if (is.null(private$connTran)) {
               warning("Rollback sin transaccion")
               return (invisible(self))
@@ -80,7 +94,7 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
       }
       ,query      = function(qry, params=NULL) {
           if (!is.null(params)) names(params) = NULL
-          tryCatch({ RMariaDB::dbGetQuery(getConn(), qry, params=params)
+          tryCatch({ RMariaDB::dbGetQuery(getConn(FALSE), qry, params=params)
               }, error = function (cond) {
                  browser()
                 SQLError( "QUERY Error",  origin=cond$message
@@ -96,15 +110,14 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
           tryCatch({
               conn = getConn(isolated)
               res = RMariaDB::dbExecute(conn, qry, params=params)
-              if (isolated) commit()
+              if (isolated) endIsolated(conn, TRUE)
           },warning = function(cond) {
-               if (isolated) rollback()
+               if (isolated) endIsolated(conn, FALSE)
                SQLError("EXECUTE", origin=cond$message, sql=qry, action="execute")
           },error = function (cond) {
              browser()
                sqlcode = getSQLCode(cond)
-               if (sqlcode == SQL_LOCK) isolated = TRUE
-               if (isolated) rollback()
+               if (isolated) endIsolated(conn, FALSE)
                SQLError( "SQL EXECUTE ERROR",origin=cond$message,sql=qry
                               ,action="execute", rc = getSQLCode(cond))
           })
@@ -114,12 +127,12 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
          tryCatch({
              conn = getConn(isolated)
              res = RMariaDB::dbWriteTable(conn, table, data, append=append, overwrite=over)
-             if (isolated) commit()
+             if (isolated) endIsolated(conn, TRUE)
          }, warning = function(cond) {
 #                       yataWarning("Warning SQL", cond, "SQL", "WriteTable", cause=tab#le)
                      stop(paste("Aviso en DB Write: ", cond$message))
          }, error   = function(cond) {
-            if (isolated) rollback()
+            if (isolated) endIsolated(conn, FALSE)
             SQLError( "SQL WRITE TABLE ERROR", origin = cond$message, sql = table
                            ,action = "WriteTable", rc = getSQLCode(cond)
                            ,sql="writeTable")
@@ -152,13 +165,15 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
       ,map       = NULL
       ,base      = NULL
       ,SQL_LOCK  = 1205
-      ,getConn   = function(isolated=FALSE) {
-         conn = private$connRead
+      ,getConn   = function(isolated) {
          if (isolated) {
-             begin()
-             conn = private$connTran
+            conn = connect()
+            RMariaDB::dbBegin(conn)
+            return (conn)
          }
-         conn
+         # Estamos en una transaccion
+         if (!is.null(private$connTran)) return (connTran)
+         private$connRead
       }
       ,getSQLCode = function (cond) {
           # Los codigos van al final del mensaje [nnnnn]
@@ -171,6 +186,10 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
           }
           rc
       }
+      ,endIsolated = function (conn, commit) {
+         if ( commit) self$commit(conn)
+         if (!commit) self$rollback(conn)
+       }
 
    )
 )

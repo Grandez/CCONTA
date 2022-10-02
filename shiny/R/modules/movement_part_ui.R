@@ -2,12 +2,12 @@ movementUI = function(id, insert = TRUE) {
    ns <- NS(id)
    lblOK = ifelse(insert, "Insertar", "Actualizar")
    lblKO = ifelse(insert, "Limpiar", "Cancelar")
-    tagList(tags$table(
-         tags$tr( tags$td()
+    tagList(tags$table(style="margin: auto"
+        ,tags$tr(tags$td("Pepe"),      tags$td("Juan"))
+        ,tags$tr( tags$td()
                  ,tags$td(switchInput( inputId=ns("swType"), onLabel = "Gasto", offLabel = "Ingreso"
                                       ,onStatus = "danger", offStatus = "success", size="large", value=TRUE)))
-        ,tags$tr(tags$td("Fecha"), tags$td(dateInput( ns("dtInput"), NULL, format = "dd/mm/yyyy"
-                                                     ,startview = "month", weekstart = 1, language = "es")))
+        ,tags$tr(tags$td("Fecha"),      tags$td(guiDateInput( ns("dtInput"))))
         ,tags$tr(tags$td("Grupo"),      tags$td(selectInput  (ns("cboGroups"),     NULL, c("Group"   = 0))))
         ,tags$tr(tags$td("Categoria"),  tags$td(selectInput  (ns("cboCategories"), NULL, c("Category"= 0))))
         ,tags$tr(tags$td("Cuenta"),     tags$td(selectInput  (ns("cboMethods"),    NULL, c("Method"  = 0))))             
