@@ -13,7 +13,6 @@ PNLXfer = R6::R6Class("CONTA.PNL.TARNSFER"
          self$accounts = obj$getAccounts()
      }
      ,add = function (...) { 
-        browser()
         res = obj$add(...) 
         if (res == 0) self$exception = obj$exception
         res

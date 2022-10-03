@@ -129,7 +129,6 @@ moduleServer(id, function(input, output, session) {
     }
    
    observeEvent(flags$refresh, ignoreInit = TRUE, {
-      browser()
       df = pnl$getData()
       if (nrow(df) == 0) {
           shinyjs::show("nodata")

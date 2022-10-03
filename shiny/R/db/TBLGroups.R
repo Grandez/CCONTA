@@ -12,12 +12,13 @@ TBLGroups   = R6::R6Class("CONTA.TBL.GROUPS"
            tblName = "GROUPS"
           ,key = c("id")
           ,fields = list(
-               id     = "ID"       
-              ,name   = "NAME"     
-              ,descr  = "DESCR"    
-              ,active = "ACTIVE"   
-              ,sync   = "SYNC"
-              ,type   = "TYPE"
+               id      = "ID"       
+              ,name    = "NAME"     
+              ,descr   = "DESCR"    
+              ,active  = "ACTIVE"   
+              ,sync    = "SYNC"
+              ,income  = "INCOME"
+              ,expense = "EXPENSE"
          )
      )
 )

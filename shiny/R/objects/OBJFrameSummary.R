@@ -18,7 +18,14 @@ OBJFrameSummary = R6::R6Class("CONTA.OBJ.FRAME.SUMMARY"
          invisible(self)
       }
       ,getReactable = function (idTable) {
-          reactable(private$dfData) # , onClick = jscode(idTable) )
+          cols = lapply(1:12, function(x) colDef(name=monthLong[x]))
+          names(cols) = as.character(seq(1,12))
+
+          cols[["idGroup"]]    = colDef(show  = FALSE)
+          cols[["idCategory"]] = colDef(show  = FALSE)
+          cols[["Concepto"]]   = colDef(width = 350)
+
+          reactable(private$dfData, columns = cols) # , onClick = jscode(idTable) )
       }
    )
    ,private = list(

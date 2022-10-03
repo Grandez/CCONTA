@@ -128,6 +128,17 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
          }
          created
       }
+      ,recordset = function(..., limit = 0) {
+         # A falta de nombre mejor
+         filter = mountClause(...)
+         qry = paste("SELECT * FROM ", tblName, filter$sql)
+         if (limit > 0) {
+             filter$values = jgg_list_append_list(filter$values, limit_=limit)
+             qry = paste(qry, "LIMIT ?")
+         }
+         df = db$query(qry, params=filter$values)
+         setColNames(df)
+      }
       ,first    = function(...) {
          filter = mountWhere(...)
          qry = paste("SELECT * FROM ", tblName, filter$sql)
@@ -373,7 +384,31 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
               cond = paste(cond, stmt)
           }
           list(sql=paste("WHERE", cond),values=values)
+      }
+      ,mountClause = function(...) {
+          data = list(...)
+          if (length(data) == 0) return (list(sql=NULL, values=NULL))
+          labels = names(data)             
+
+          fillName = function (idx) {
+             item = data[[idx]]
+             if (is.null(item$name)) {
+                if (is.na(labels[idx]) || nchar(labels[idx]) == 0) return (NULL)
+                item$name = labels[idx]
+             }
+             item$name = fields[[item$name]]
+             item
+          }
+
+          # Aplica el nombre de la columna
+          ndata = lapply(1:length(data), function(idx) fillName(idx))
+          # Monta las partes de la clausula WHERE
+          parms = lapply(ndata, parseParameter)
+          cond = paste(sapply(parms, function(item) item$sql), collapse = " AND ")
+          values = lapply(parms, function(item) item$parms)
+          list(sql=paste("WHERE", cond),values=values)
        }
+      
       ,makeList = function(...) {
            data = list(...)
            if (missing(data) || length(data) == 0)  return (NULL)
@@ -457,5 +492,24 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
           filter$values = append(filter$values, key)
           filter
       }
+      ,parseParameter = function (item) {
+         if (is.null(item$op)) item$op = "eq"
+         op = tolower(item$op)
+         col = item$name
+         if (!is.null(item$expr)) col = paste(item$expr, "(", col, ")")
+      
+         if (op == "eq") return (list(sql = paste(col, "=  ?"), parms = item$value))
+         if (op == "gt") return (list(sql = paste(col, ">  ?"), parms = item$value)) 
+         if (op == "ge") return (list(sql = paste(col, ">= ?"), parms = item$value)) 
+         if (op == "lt") return (list(sql = paste(col, "<  ?"), parms = item$value)) 
+         if (op == "le") return (list(sql = paste(col, "<= ?"), parms = item$value)) 
+         if (op == "between") return (list(sql = paste(col, "BETWEEN ? AND ?"), parms = item$value))         
+         if (op == "in") {
+            sql = paste(col, "IN (", paste(rep("?", length(item$value)), collapse=","), ")")
+            parms = unlist(item$value)
+            return (list(sql = sql, parms = parms)) 
+         }
+         stop(paste("Invalid op type in query:", op, "on", item$name)) 
+      }      
    )
 )

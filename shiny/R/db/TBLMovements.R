@@ -13,19 +13,17 @@ TBLMovements    = R6::R6Class("CONTA.TBL.MOVEMENTS"
           ,key = c("id")
           ,fields = list(
               id         = "ID"
-             ,date       = "CDATE"
+             ,dateOper   = "DATEOPER"
+             ,dateVal    = "DATEVAL"
              ,idMethod   = "IDMETHOD"
              ,idGroup    = "IDGROUP"
              ,idCategory = "IDCATEGORY"
              ,amount     = "AMOUNT"
              ,note       = "NOTE"
+             ,expense    = "EXPENSE"
              ,type       = "TYPE"
-             ,mode       = "MODE"
              ,active     = "ACTIVE"
              ,sync       = "SYNC"
-             ,year       = "DATEY"
-             ,month      = "DATEM"
-             ,day        = "DATED"
             )
      )
 )

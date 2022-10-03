@@ -1,6 +1,5 @@
 -- use CCONTA;
 
-
 DROP TABLE  IF EXISTS PARAMETERS CASCADE;
 CREATE TABLE PARAMETERS  (
     GRUPO    INTEGER     NOT NULL -- Grupo, no usamos GROUP para evitar problemas de nombres
@@ -25,15 +24,17 @@ CREATE TABLE ACCOUNTS  (
    ,UNIQUE      (NAME)              -- Avoid duplicate names
 );
 
--- Tabla de metodos de pago
+-- Tabla de metodos de realizacion de la operacion
 DROP TABLE  IF EXISTS METHODS CASCADE;
 CREATE TABLE METHODS  (
     IDACCOUNT INT UNSIGNED       NOT NULL -- Grupo: IInnn - II Origen / nnn ID
    ,ID        INT UNSIGNED       NOT NULL -- Grupo: IInnn - II Origen / nnn ID
    ,NAME      VARCHAR(255) NOT NULL -- Nombre del grupo
    ,DESCR     TEXT   
-   ,CLOSE     TINYINT      DEFAULT 0  COMMENT "Dia de cierre. Si 0 es debito"           -- 0 -> DEBITO, si no cierre de cuenta
-   ,CHARGE    TINYINT      DEFAULT 0  COMMENT "Dia de cargo para tarjetas de credito"   -- Dia de cargo si es debito
+   ,EXPENSE   TINYINT      DEFAULT 1  COMMENT "Acepta gastos"  
+   ,INCOME    TINYINT      DEFAULT 1  COMMENT "Acepta Ingresos"
+   ,CLOSE     TINYINT      DEFAULT 0  COMMENT "Dia de cierre. Si 0 es debito"
+   ,CHARGE    TINYINT      DEFAULT 0  COMMENT "Dia de cargo para tarjetas de credito"
    ,ACTIVE    TINYINT      DEFAULT 1      
    ,SYNC      TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
    ,PRIMARY KEY (ID)                 -- Primary key
@@ -47,7 +48,8 @@ CREATE TABLE GROUPS  (
    ,NAME      VARCHAR(255) NOT NULL -- Nombre del grupo
    ,DESCR     TEXT   
    ,ACTIVE    TINYINT      DEFAULT 1      
-   ,TYPE      TINYINT      DEFAULT 0  COMMENT '-1 Ingresos / 1 Gastos'
+   ,EXPENSE   TINYINT      DEFAULT 1  COMMENT "Gastos"  
+   ,INCOME    TINYINT      DEFAULT 1  COMMENT "Ingresos"
    ,SYNC      TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
    ,PRIMARY KEY (ID)                -- Primary key
    ,UNIQUE      (TYPE, NAME)         -- Avoid duplicate names
@@ -61,6 +63,8 @@ CREATE TABLE CATEGORIES  (
    ,ID        INT UNSIGNED  NOT NULL   -- ID Cuenta Cuenta: IInnnmmm - II Origen / nnn grupo / mmm Cuenta    
    ,NAME      VARCHAR(255)  NOT NULL   -- Nombre de la cuenta
    ,DESCR     TEXT   
+   ,EXPENSE   TINYINT       DEFAULT 1  COMMENT "Gastos"  
+   ,INCOME    TINYINT       DEFAULT 1  COMMENT "Ingresos"   
    ,ACTIVE    TINYINT       DEFAULT 1   
    ,SYNC      TINYINT       DEFAULT 0  -- Indica si se ha sincronizado, editado, etc.   
    ,PRIMARY KEY (IDGROUP, ID)         -- Primary key
@@ -86,25 +90,35 @@ CREATE TABLE BUDGET    (
 
 -- Tabla de Gastos
 -- TODO mirar indices por queries
-
+-- Tipo de movimiento:
+-- Negativos gastos, Positivos ingresos
+--    0 - No asignado
+--    1 - Real. Se ha ejecutado
+--    2 - Previsto
+--    3 - Provision
+--    4 - Amortizacion
+--   1n - Previsto
+--   2n - Adeudados/Aplazados
+--
 DROP TABLE  IF EXISTS MOVEMENTS CASCADE;
 CREATE TABLE  MOVEMENTS  (
     ID         INT UNSIGNED   NOT NULL -- Unique ID I + timestamp
-   ,CDATE      DATE           NOT NULL -- Fecha del gasto
-   ,IDMETHOD   INT UNSIGNED   DEFAULT 0 -- Fuente del gasto
-   ,IDGROUP    INT            NOT NULL -- Grupo
-   ,IDCATEGORY INT UNSIGNED   NOT NULL -- Fuente del gasto   
-   ,AMOUNT     DECIMAL(7,3)   NOT NULL -- Importe
+   ,DATEOPER   DATE           NOT NULL           COMMENT 'Fecha de operacion'
+   ,DATEVAL    DATE           NOT NULL           COMMENT 'Fecha de valor'   
+   ,IDMETHOD   INT UNSIGNED   DEFAULT 0          COMMENT 'Metodo de pago'
+   ,IDGROUP    INT            NOT NULL           COMMENT 'Grupo de gastos'
+   ,IDCATEGORY INT UNSIGNED   NOT NULL           COMMENT 'Categoria del gasto'
+   ,AMOUNT     DECIMAL(7,3)   NOT NULL           COMMENT 'Importe el gasto'
    ,NOTE       VARCHAR(255)          -- Comentarios
-   ,TYPE       TINYINT      DEFAULT 0  COMMENT 'Gastos: Positivo, Ingresos: Negativo. Real, Previsto, credito, amortizacion,etc'
-   ,MODE       TINYINT      DEFAULT 0  COMMENT 'Tipo de movimiento: Real, Previsto, credito, amortizacion,etc'
-   ,ACTIVE     TINYINT      DEFAULT 1   
-   ,SYNC       TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.      
+   ,EXPENSE    TINYINT        DEFAULT 1          COMMENT "Es un gasto (1) o in ingreso"     
+   ,TYPE       TINYINT        DEFAULT 1          COMMENT 'Tipo de gasto segun codigo'
+   ,ACTIVE     TINYINT        DEFAULT 1   
+   ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.      
    -- Partimos la fecha en Y/M/D para las queries
-   ,DATEY      SMALLINT     NOT NULL
-   ,DATEM      SMALLINT     NOT NULL   
-   ,DATED      SMALLINT     NOT NULL
-   ,PRIMARY KEY (ID)                 -- Primary key
+--    ,DATEY      SMALLINT       NOT NULL
+--    ,DATEM      SMALLINT       NOT NULL   
+--    ,DATED      SMALLINT       NOT NULL
+--    ,PRIMARY KEY (ID)                 -- Primary key
    ,INDEX       (DATEY, DATEM, DATED, IDGROUP, IDCATEGORY)    -- Alternate Key
 --   ,INDEX       (ACCOUNT, TYPE)      -- Alternate Key   
    ,INDEX       (SYNC)               -- For synch
@@ -134,6 +148,23 @@ CREATE TABLE TRANSFERS  (
    ,ACTIVE    TINYINT      DEFAULT 1      
    ,SYNC      TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
    ,PRIMARY KEY (ID)                 -- Primary key
-   ,INDEX       (XFROM, DATEOPER)  
-   ,INDEX       (XTO,   DATEVAL)
+   ,INDEX       (ORIGIN, DATEOPER)  
+   ,INDEX       (TARGET, DATEVAL)
+);
+
+-- aMORTIZACIONES
+DROP TABLE  IF EXISTS REDEMPTIONS CASCADE;
+CREATE TABLE REDEMPTIONS  (
+    ID         INT UNSIGNED   NOT NULL COMMENT 'Unique ID'
+   ,DATEOPER   DATE           NOT NULL COMMENT 'Fecha de operacion de la transferencia'
+   ,DATEVAL    DATE           NOT NULL COMMENT 'Fecha de valor la transferencia'   
+   ,ORIGIN     INT UNSIGNED   NOT NULL COMMENT 'Cuenta origen'   
+   ,TARGET     INT UNSIGNED   NOT NULL COMMENT 'Cuenta destino'   
+   ,AMOUNT     DECIMAL(7,3)   NOT NULL COMMENT 'Importe de la transferencia'   
+   ,NOTE       VARCHAR(255)            COMMENT 'Comentarios'   
+   ,ACTIVE    TINYINT      DEFAULT 1      
+   ,SYNC      TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
+   ,PRIMARY KEY (ID)                 -- Primary key
+   ,INDEX       (ORIGIN, DATEOPER)  
+   ,INDEX       (TARGET, DATEVAL)
 );

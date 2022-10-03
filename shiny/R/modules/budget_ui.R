@@ -1,5 +1,4 @@
 modBudgetInput = function(id,title) {
-   ns <- NS(id)
-   main = tagList(reactableOutput(ns("tblBudget")))
+   main = ui_status(id)
    list(left=NULL, main=main, right=NULL)    
 }

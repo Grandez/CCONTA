@@ -17,13 +17,15 @@ OBJFrame = R6::R6Class("CONTA.OBJ.FRAME"
          mountFrame()
          invisible(self)
       }
-      ,set = function (data) {
+      ,set = function (data, dateValue = TRUE) {
          private$dfData = dfBase
-         add(data)
+         add(data, dateValue)
          invisible(self)
       }
-      ,add = function (data) {
+      ,add = function (data, dateValue = TRUE) {
          if (nrow(data) == 0) return (invisible(self))
+         data$month = lubridate::month(data$dateVal)
+         if (!dateValue) data$month = lubridate::month(data$dateOper)
          df = data %>% group_by (idGroup, idCategory, month) %>% summarise(amount = sum(amount), .groups = "keep")
          df = as.data.frame(df %>% tidyr::spread(month, amount, fill=0))
          
@@ -42,12 +44,14 @@ OBJFrame = R6::R6Class("CONTA.OBJ.FRAME"
       }
       ,getTotal     = function () { colSums(dfData[,5:16], na.rm = TRUE) }
       ,getReactable = function (idTable) {
-          cols = lapply(1:12, function(x) colDef(aggregate = "sum"))
+          cols = lapply(1:12, function(x) colDef(name=monthLong[x], aggregate = "sum"))
           names(cols) = as.character(seq(1,12))
           cols[["idGroup"]]    = colDef(show = FALSE)
           cols[["idCategory"]] = colDef(show = FALSE)
-          # cols[["Group"]]      = colDef(sticky  = "left")
-          # cols[["Category"]]   = colDef(sticky  = "left")
+          cols[["Group"]]      = colDef(name = "Grupo",     width = 150)
+          cols[["Category"]]   = colDef(name = "Categoria", width = 200)
+          if ("row" %in% colnames(dfData)) cols[["row"]] = colDef(show = FALSE)
+         
           reactable(private$dfData, groupBy = "Group", columns = cols) # , onClick = jscode(idTable) )
       }
    )
@@ -56,6 +60,35 @@ OBJFrame = R6::R6Class("CONTA.OBJ.FRAME"
      ,dfData        = NULL
      ,tblGroups     = NULL
      ,tblCategories = NULL
+     ,monthLong  = c( "Enero", "Febrero", "Marzo",      "Abril",   "Mayo",      "Junio"
+                   ,"Julio", "Agosto",  "Septiembre", "Octubre", "Noviembre", "Diciembre")   
+     ,monthShort = c( "Ene.", "Feb.", "Mar.",      "Abr.",   "May.",      "Jun."
+                   ,"Jul.", "Ago.",  "Sep.", "Oct.", "Nov.", "Dic.")   
+     ,mountFrame = function(expense = TRUE) {
+        expenses = list(expense = 1)
+        incomes  = list(income = 1)
+        
+        if (expense) filter = expenses
+        else         filter = incomes
+        filter$active = 1     
+        
+        dfg = tblGroups$table(filter)   
+        dfc = tblCategories$table(filter)
+
+        dfg = dfg[,c("id","name")]
+        colnames(dfg) = c("idGroup", "Group")
+
+
+        dfc = dfc[,c("idGroup", "id","name")]
+        colnames(dfc) = c("idGroup", "idCategory", "Category")
+        
+        dfc = as_tibble(dfc)
+        df = dplyr::left_join(dfc, dfg, by = "idGroup")
+        df[,as.character(seq(1,12))] = 0
+        df = df %>% mutate(row = row_number())
+        private$dfBase = df
+        private$dfData = df
+    }   
       
     ,jscode = function(idTable) {
        data = paste("{ row: rowInfo.index + 1, colName: colInfo.id")

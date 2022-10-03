@@ -1,3 +1,16 @@
+# Un movimiento puede ser:
+# 1 - Real, es decir, gasto inmediato
+# 2 - Amortizacion: Es decir, un gasto amortizable, ha ocurrido y se va descontando
+# 3 - Provision: Un gato ficticio que se va acumulando
+# Un pago con tarjeta se ejecuta en la fecha de operacion y es real
+# La fecha de valor es cuando se aplica, la fecha de pago de la tarjeta
+# Con las tarjetas revolving habria que pasarlo como a deuda
+# Ejemplo:
+# Tengo un gasto de 2000 y lo aplazo en 10 meses
+#    Marcamos el gasto como "aplazado/adeudado"
+#    Lo pasamos a deudas
+# La provision de fondos se tiene que anular con un gasto real, y no tiene una fecha de cargo
+# Necesitamos el mes al que aplicar
 OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
    ,portable   = FALSE
    ,cloneable  = FALSE
@@ -11,27 +24,33 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          private$tblCategories = factory$getTable("Categories")
          private$tblMovements  = factory$getTable("Movements")
          private$tblTags       = factory$getTable("Tags")
-         if (type == 0) private$dfGroups = tblGroups$table()
-         if (type >  1) private$dfGroups = tblGroups$table(type = type)
+         private$dfGroups      = tblGroups$table(active = 1)
       }
-      ,getGroups     = function (type = 0) {
-          df = dfGroups[dfGroups$active == 1,]
-          if (type != 0) df = df[df$type == type,]
+      ,getGroups     = function (type = c("all", "expenses", "incomes")) { 
+          mtype = "all"
+          if (!missing(type)) mtype = match.arg(type)
+          df = dfGroups
+          if (mtype == "expenses") df = df[df$expense == 1,]
+          if (mtype == "income")   df = df[df$income  == 1,]
           df
       }
-      ,getCategories = function (group = 0) { 
-         if (group == 0) tblCategories$table(active = 1) 
-         else            tblCategories$table(idGroup = group, active = 1) 
+      ,getCategories = function (expense = TRUE, group = 0) { 
+         active  = list(name = "active",  value = 1)
+         idGroup = list(name = "idGroup", value = group) 
+         if (group == 0) idGroup = NULL
+         field = list(name = "income", value = 1)
+         if (expense) field$name = "expense"
+         tblCategories$recordset(field, active, idGroup) 
        }
-      ,getMethods    = function ()          { tblMethods$table(active = 1) }
-      ,getExpenses   = function ()          { getMovements (type =  1) }
-      ,getIncomes    = function ()          { getMovements (type = -1) }
-      ,getMovements  = function (...)  {
-         args = unlist(list(...))
-         args = args[args != 0]
-         filter = list(active=1)
-         if (length(args) > 0) filter = jgg_list_merge(filter, as.list(args))
-         private$dfMov = tblMovements$table(filter)
+      ,getMethods    = function (expenses = TRUE)          { 
+         if ( expenses) df = tblMethods$table(expense = 1, active = 1) 
+         if (!expenses) df = tblMethods$table(income  = 1, active = 1)
+         df
+        }
+      ,getExpenses   = function ()          { getMovements (expense = 1) }
+      ,getIncomes    = function ()          { getMovements (expense = 0) }
+      ,getMovements  = function (expense)  {
+         private$dfMov = tblMovements$table(expense=expense, active = 1)
          dfMov
       }
       ,getMovementsFull  = function (...)  {
@@ -65,11 +84,6 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          private$mov     = jgg_list_merge_list(private$mov, list(...))
          private$mov$id = factory$tools$getID()
          
-         dt = private$mov$date
-         private$mov$year  = lubridate::year(dt)
-         private$mov$month = lubridate::month(dt)
-         private$mov$day   = lubridate::day(dt)
-         
          tryCatch({
             tblMovements$db$begin()
             tblMovements$add(private$mov)
@@ -98,12 +112,12 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
       ,tblCategories = NULL
       ,tblMovements  = NULL
       ,tblTags       = NULL
-      ,mov           = list(type = 1, mode = 1)
+      ,mov           = list(type = 1)
       ,addTags = function() {
          tags = strsplit(mov$tags, "[,;]")
          tags = tags[[1]]
-         grp = dfGroups[dfGroups$id == mov$group, "name"]
-         dfc = tblCategories$table(idGroup = mov$group, id = mov$category)
+         grp = dfGroups[dfGroups$id == mov$idGroup, "name"]
+         dfc = tblCategories$table(idGroup = mov$idGroup, id = mov$idCategory)
          cat = dfc[1, "name"]
          tags = c(grp, cat, tags)
          tags = unique(tags)
