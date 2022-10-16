@@ -24,15 +24,14 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
       }
       ,getName    = function ()     { dbInfo$dbName }
       ,connect    = function ()     {
-          tryCatch({RMariaDB::dbConnect( drv = RMariaDB::MariaDB()
+          tryCatch({suppressWarnings(RMariaDB::dbConnect( drv = RMariaDB::MariaDB()
                                         ,username = dbInfo$user
                                         ,password = dbInfo$password
                                         ,host     = dbInfo$host
                                         ,port     = dbInfo$port
                                         ,dbname   = dbInfo$dbName
-                    )
+                    ))
           },error = function(cond) {
-              browser()
               SQLError( "DB Connection error", origin=cond$message
                              ,action="connect", rc = getSQLCode(cond)
                              ,sql="connect")
@@ -96,7 +95,6 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
           if (!is.null(params)) names(params) = NULL
           tryCatch({ RMariaDB::dbGetQuery(getConn(FALSE), qry, params=params)
               }, error = function (cond) {
-                 browser()
                 SQLError( "QUERY Error",  origin=cond$message
                                ,action="query", rc = getSQLCode(cond)
                                ,sql=qry)
@@ -105,17 +103,15 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
       ,execute    = function(qry, params=NULL, isolated=FALSE) {
           # isolated crea una transaccion para esa query
           # Si son varias acciones se activa con begin - commit
-
           if (!is.null(params)) names(params) = NULL
           tryCatch({
               conn = getConn(isolated)
               res = RMariaDB::dbExecute(conn, qry, params=params)
               if (isolated) endIsolated(conn, TRUE)
-          },warning = function(cond) {
-               if (isolated) endIsolated(conn, FALSE)
-               SQLError("EXECUTE", origin=cond$message, sql=qry, action="execute")
+          # },warning = function(cond) {
+          #      if (isolated) endIsolated(conn, FALSE)
+          #      SQLError("EXECUTE", origin=cond$message, sql=qry, action="execute")
           },error = function (cond) {
-             browser()
                sqlcode = getSQLCode(cond)
                if (isolated) endIsolated(conn, FALSE)
                SQLError( "SQL EXECUTE ERROR",origin=cond$message,sql=qry

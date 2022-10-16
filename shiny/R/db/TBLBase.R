@@ -278,6 +278,7 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
           setColNames(db$query(sql, filter$values))
       }
       ,add     = function(data, isolated=FALSE) {
+         
           if (missing(data)) data = self$current
           if (is.data.frame(data)) data = as.list.data.frame(data)
 
@@ -392,7 +393,15 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
             col = item$name
             if (!is.null(item$expr)) col = paste(item$expr, "(", col, ")")
 
+            if (!is.null(item$func)) {
+               col = paste(item$func, "(", col, ")")
+            }
+            if (tolower(item$value) == "null") {
+                if (op == "eq") return (list(sql = paste(col, "IS NULL"),     parms = NULL))
+                if (op == "ne") return (list(sql = paste(col, "IS NOT NULL"), parms = NULL))
+            }
             if (op == "eq") return (list(sql = paste(col, "=  ?"), parms = item$value))
+            if (op == "ne") return (list(sql = paste(col, "<> ?"), parms = item$value))
             if (op == "gt") return (list(sql = paste(col, ">  ?"), parms = item$value))
             if (op == "ge") return (list(sql = paste(col, ">= ?"), parms = item$value))
             if (op == "lt") return (list(sql = paste(col, "<  ?"), parms = item$value))

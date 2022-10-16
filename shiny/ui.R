@@ -7,10 +7,11 @@ tagList(shinyjs::useShinyjs()
                  ,paths    = NULL,    cssFiles = NULL
                  ,jsFiles  = NULL, jsInit   = NULL
                  ,titleActive = FALSE,  lang     = "es"
-   ,JGGTab(id="status", "Situacion",      NULL, JGGUI("status"))
-   ,JGGTab(id="budget", "Presupuesto",    NULL, JGGUI("budget"))
-   ,JGGTab(id="detail", "Detalle",        NULL, JGGUI("detail"))   
-   ,JGGTab(id="config", "Configuracion",  NULL, JGGUI("config"))      
-   ,JGGTab(id="xfer",   "Transferencias", NULL, JGGUI("xfer"))
-   ,JGGTab(id="input",  "Entrada",        NULL, JGGUI("input") )   
+   ,JGGTab(id="status",   "Situacion",      NULL, JGGUI("status"))
+   ,JGGTab(id="position", "Posicion",       NULL, JGGUI("position"))
+   ,JGGTab(id="budget",   "Presupuesto",    NULL, JGGUI("budget"))
+   ,JGGTab(id="detail",   "Detalle",        NULL, JGGUI("detail"))   
+   ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))      
+   ,JGGTab(id="xfer",     "Transferencias", NULL, JGGUI("xfer"))
+   ,JGGTab(id="input",    "Entrada",        NULL, JGGUI("input") )   
 ))

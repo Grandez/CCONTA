@@ -14,6 +14,11 @@ OBJTransfers   = R6::R6Class("CONTA.OBJ.TRANSFER"
           if (all) return (dfAccounts)
           dfAccounts[dfAccounts$active == 1,]
       }
+      ,getHistory = function() {
+         df = tblTransfers$recordset(dtVal = list(func="YEAR", value = WEB$year))
+         df$month = lubridate::month(df$dtVal)
+         df %>% group_by (origin, target, month) %>% summarise(amount = sum(amount), .groups = "keep")
+      }
       ,add = function(...) {
          data = list(...)
          self$exception = NULL

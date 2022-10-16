@@ -113,7 +113,6 @@ moduleServer(id, function(input, output, session) {
       
       pnl$data$origin$current = pnl$data$origin$current + item$amount
       pnl$data$origin$pending = pnl$data$origin$pending - item$amount
-      browser()
       updateItemization(item)
       clearForm(pnl$data$origin$pending)      
    }

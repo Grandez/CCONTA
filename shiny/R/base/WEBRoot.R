@@ -1,4 +1,4 @@
-JGGWEBROOT = R6::R6Class("JGG.INFO.APP"
+WEBROOT = R6::R6Class("JGG.INFO.APP"
   ,portable   = TRUE
   ,cloneable  = FALSE
   ,lock_class = TRUE
@@ -7,6 +7,7 @@ JGGWEBROOT = R6::R6Class("JGG.INFO.APP"
       print      = function() { message("WEB Singleton") }     
      ,factory    = NULL
      ,tools      = NULL
+     ,year       = 2022
      ,initialize = function(mode="prod") {
          super$initialize()
          reg.finalizer(self,

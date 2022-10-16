@@ -23,4 +23,4 @@ files = list.files(path="R", pattern="\\.R$", recursive=TRUE, full.names=T, igno
 sapply(files,source)
 
 #WEB = JGGWEBROOT$new("test")
-WEB = JGGWEBROOT$new()
+WEB = WEBROOT$new()
