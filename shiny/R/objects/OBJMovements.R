@@ -23,6 +23,7 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          private$tblGroups     = factory$getTable("Groups")
          private$tblCategories = factory$getTable("Categories")
          private$tblMovements  = factory$getTable("Movements")
+         private$tblParents    = factory$getTable("Itemizeds")
          private$tblTags       = factory$getTable("Tags")
          private$dfGroups      = tblGroups$table(active = 1)
       }
@@ -81,27 +82,57 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
           invisible(self)
       }
       ,add = function(...) {
-         private$mov     = jgg_list_merge_list(private$mov, list(...))
+         args = list(...)
+         if (is.list(args[[1]])) {
+            private$mov = args[[1]]
+         } else {
+            private$mov = args
+         }
          private$mov$id = factory$tools$getID()
          
          tryCatch({
             tblMovements$db$begin()
             tblMovements$add(private$mov)
-            addTags()
+            addTags(mov, mov$tags)
             tblMovements$db$commit()
             private$mov$id
          }, error = function (cond) {
-            browser()
             tblMovements$db$rollback()
             0
          })
       }
-      # ,get = function(mask = 0, all = FALSE) {
-      #    # df = tblExpenses$table()
-      #    # if (!all) df = df[df$active == 1,]
-      #    # if (mask > 0) df = df %>% filter(bitwAnd(type, mask) > 0)
-      #    # df
-      # }
+      ,itemize = function (base, items) {
+          idx = 1
+          if (length(items) == 0) return (add(base)) 
+         
+          tryCatch({
+            tblMovements$db$begin()
+            base$id = factory$tools$getID()
+            tblParents$add(base)
+
+            while (idx <= length(items)) {
+               item = items[[idx]] 
+               rec = list( id = factory$tools$getID()
+                          ,parent     = base$id
+                          ,dateOper   = base$dateOper
+                          ,dateVal    = base$dateVal
+                          ,idMethod   = base$idMethod
+                          ,idGroup    = item$idGroup
+                          ,idCategory = item$idCategory
+                          ,amount     = item$amount
+                          ,note       = item$note)
+               tblMovements$add(rec)
+               addTags(rec, item$tags)
+               idx = idx + 1
+            }
+            tblMovements$db$commit()
+            base$id
+        }, error = function (cond) {
+           tblMovements$db$rollback()     
+           0
+        })
+         
+      }
    )
    ,private = list(
        dfGroups      = NULL
@@ -111,10 +142,11 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
       ,tblGroups     = NULL
       ,tblCategories = NULL
       ,tblMovements  = NULL
+      ,tblParents    = NULL      
       ,tblTags       = NULL
       ,mov           = list(type = 1)
-      ,addTags = function() {
-         tags = strsplit(mov$tags, "[,;]")
+      ,addTags = function(mov, mtags) {
+         tags = strsplit(mtags, "[,;]")
          tags = tags[[1]]
          grp = dfGroups[dfGroups$id == mov$idGroup, "name"]
          dfc = tblCategories$table(idGroup = mov$idGroup, id = mov$idCategory)

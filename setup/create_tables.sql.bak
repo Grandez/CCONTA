@@ -44,7 +44,7 @@ CREATE TABLE METHODS  (
 -- Tabla de Grupos de gastos
 DROP TABLE  IF EXISTS GROUPS CASCADE;
 CREATE TABLE GROUPS  (
-    ID        INT          NOT NULL COMMENT 'Convencion: Neg = Ingreso / Pos = Gasto'
+    ID        INT          NOT NULL 
    ,NAME      VARCHAR(255) NOT NULL -- Nombre del grupo
    ,DESCR     TEXT   
    ,ACTIVE    TINYINT      DEFAULT 1      

@@ -386,9 +386,29 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
           list(sql=paste("WHERE", cond),values=values)
       }
       ,mountClause = function(...) {
+         parseParameter = function (item) {
+            if (is.null(item$op)) item$op = "eq"
+            op = tolower(item$op)
+            col = item$name
+            if (!is.null(item$expr)) col = paste(item$expr, "(", col, ")")
+
+            if (op == "eq") return (list(sql = paste(col, "=  ?"), parms = item$value))
+            if (op == "gt") return (list(sql = paste(col, ">  ?"), parms = item$value))
+            if (op == "ge") return (list(sql = paste(col, ">= ?"), parms = item$value))
+            if (op == "lt") return (list(sql = paste(col, "<  ?"), parms = item$value))
+            if (op == "le") return (list(sql = paste(col, "<= ?"), parms = item$value))
+            if (op == "between") return (list(sql = paste(col, "BETWEEN ? AND ?"), parms = item$value))
+            if (op == "in") {
+                sql = paste(col, "IN (", paste(rep("?", length(item$value)), collapse=","), ")")
+                parms = unlist(item$value)
+                return (list(sql = sql, parms = parms))
+            }
+            stop(paste("Invalid op type in query:", op, "on", item$name))
+          }
+
           data = list(...)
           if (length(data) == 0) return (list(sql=NULL, values=NULL))
-          labels = names(data)             
+          labels = names(data)
 
           fillName = function (idx) {
              item = data[[idx]]
@@ -408,7 +428,6 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
           values = lapply(parms, function(item) item$parms)
           list(sql=paste("WHERE", cond),values=values)
        }
-      
       ,makeList = function(...) {
            data = list(...)
            if (missing(data) || length(data) == 0)  return (NULL)

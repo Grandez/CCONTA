@@ -31,9 +31,11 @@ OBJFrame = R6::R6Class("CONTA.OBJ.FRAME"
          
          # dfData: Meses empiezan en la columna 5 (4 + mes) - df empiezan en la columna 3
          for (row in 1:nrow(df)) {
-            dfRow = dfData %>% filter(idGroup == df[row, "idGroup"] & idCategory == df[row,"idCategory"])
+#            dfRow = dfData %>% filter(idGroup == df[row, "idGroup"] & idCategory == df[row,"idCategory"])
+            dfRow = dfData[dfData$idGroup == df[row, "idGroup"],]
+            dfRow = dfRow[dfRow$idCategory == df[row, "idCategory"],]
             tgt = nrow(dfRow)
-            if (tgt != 1) stop("Datos duplicados en dfBase para agrupar datos")
+            if (tgt != 1) stop("Datos erroneos en dfBase para agrupar datos")
             tgt = as.integer(dfRow[1,"row"])
             meses = colnames(df)
             for (mes in 3:length(meses)) {

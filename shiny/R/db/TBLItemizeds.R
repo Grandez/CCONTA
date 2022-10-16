@@ -1,4 +1,4 @@
-TBLMovements    = R6::R6Class("CONTA.TBL.MOVEMENTS"
+TBLItemizeds    = R6::R6Class("CONTA.TBL.MOVEMENTS"
     ,inherit    = TBLBase
     ,portable   = FALSE
     ,cloneable  = FALSE
@@ -9,7 +9,7 @@ TBLMovements    = R6::R6Class("CONTA.TBL.MOVEMENTS"
           }
      )
      ,private = list (
-           tblName = "MOVEMENTS"
+           tblName = "ITEMIZEDS"
           ,key = c("id")
           ,fields = list(
               id         = "ID"

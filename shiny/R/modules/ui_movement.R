@@ -17,8 +17,9 @@ ui_movement = function(id, insert = TRUE) {
         ,tags$tr(tags$td("Tags"),      tags$td(guiTextArea(ns("txtTags"),       NULL, rows=3)))
         ,tags$tr(tags$td(colspan="2",  textOutput(ns("txtMessage"))))
         ,tags$tr( tags$td()             
-                 ,tags$td( actionBttn(ns("btnOK"), label=lblOK, color="success", style="jelly")
-                          ,actionBttn(ns("btnKO"), label=lblKO,  color="danger",  style="jelly")))
+                 ,tags$td( actionBttn(ns("btnOK"),  label=lblOK,     color="success", style="jelly")
+                          ,actionBttn(ns("btnKO"),  label=lblKO,     color="danger",  style="jelly")
+                          ,shinyjs::hidden(actionBttn(ns("btnItemize"), label="Desglosar",  color="warning", style="jelly"))))
              )
        
     )       
