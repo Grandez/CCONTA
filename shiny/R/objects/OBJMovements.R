@@ -78,7 +78,6 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          df
       }
       ,set = function (...) {
-         browser()
           private$mov = jgg_list_merge(mov, list(...))
           invisible(self)
       }
@@ -90,7 +89,7 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
             private$mov = jgg_list_merge(private$mov, args)
          }
          private$mov$id = factory$tools$getID()
-         browser()
+
          tryCatch({
             tblMovements$db$begin()
             tblMovements$add(private$mov)
@@ -98,7 +97,6 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
             tblMovements$db$commit()
             private$mov$id
          }, error = function (cond) {
-            browser()
             tblMovements$db$rollback()
             0
          })
