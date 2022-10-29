@@ -45,6 +45,7 @@ OBJFrame = R6::R6Class("CONTA.OBJ.FRAME"
          }
       }
       ,getTotal     = function () { colSums(dfData[,5:16], na.rm = TRUE) }
+      ,getData      = function () { private$dfData }
       ,getReactable = function (idTable) {
           cols = lapply(1:12, function(x) colDef(name=monthLong[x], aggregate = "sum"))
           names(cols) = as.character(seq(1,12))

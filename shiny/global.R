@@ -12,6 +12,7 @@ suppressMessages(library(lubridate,          warn.conflicts = FALSE))
 #suppressMessages(library(shinyWidgets,       warn.conflicts = FALSE))
 #suppressMessages(library(shinydashboardPlus, warn.conflicts = FALSE))
 suppressMessages(library(reactable,          warn.conflicts = FALSE))
+suppressMessages(library(plotly,             warn.conflicts = FALSE))
 
 suppressMessages(library(RMariaDB,     warn.conflicts = FALSE))
 
