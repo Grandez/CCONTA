@@ -7,7 +7,6 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
   ,inherit    = PNLBase   
   ,public = list(
       initialize     = function (id, session) {
-         browser()
          super$initialize(id, session, TRUE)
          private$frmSummary   = factory$getObject("FrameSummary",  force = TRUE)
          private$frmIncomes   = factory$getObject("FrameIncomes",  force = TRUE)
@@ -15,7 +14,29 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
       }
      ,getSummary  = function (target) { frmSummary$getReactable (target) }
      ,getIncomes  = function (target) { frmIncomes$getReactable (target) }
-     ,getExpenses = function (target) { frmExpenses$getReactable(target) }
+     ,getExpenses = function (target) { 
+        data = frmExpenses$getData() 
+        cnames = lapply(1:12, function(x) month_short(x))
+        names(cnames) = as.character(seq(1,12))
+        tbl = makeGroupedTable( data
+                               ,group="Group", columns=as.character(seq(1,12)), method="sum"
+                               ,colNames=cnames, click=ns("tblExpenses")
+                               ,hide=c("idGroup", "idCategory", "row")
+                              )
+        tbl
+      # ,getReactable = function (idTable) {
+      #     cols = lapply(1:12, function(x) colDef(name=monthLong[x], aggregate = "sum"))
+      #     names(cols) = as.character(seq(1,12))
+      #     cols[["idGroup"]]    = colDef(show = FALSE)
+      #     cols[["idCategory"]] = colDef(show = FALSE)
+      #     cols[["Group"]]      = colDef(name = "Grupo",     width = 150)
+      #     cols[["Category"]]   = colDef(name = "Categoria", width = 200)
+      #     if ("row" %in% colnames(dfData)) cols[["row"]] = colDef(show = FALSE)
+      #    
+      #     reactable(private$dfData, groupBy = "Group", columns = cols) # , onClick = jscode(idTable) )
+      # }
+      #   
+      }
      
      ,loadBudget = function () { obj$getBudget() }
    )
@@ -30,11 +51,11 @@ moduleServer(id, function(input, output, session) {
     pnl = WEB$getPanel(id, PNLBudget, session)
 
    refresh = function () {
-      browser()
       #pnl$refreshData()
       output$tblSummary  = renderReactable({ pnl$getSummary(ns("tblSummary"))   })
       output$tblIncomes  = renderReactable({ pnl$getIncomes (ns("tblIncomes"))  })
-      output$tblExpenses = renderReactable({ pnl$getExpenses(ns("tblExpenses")) })
+      tbl = pnl$getExpenses(ns("tblExpenses"))
+      output$tblExpenses = updTable({tbl})
    }
    if (!pnl$loaded) {
       pnl$loaded = TRUE
@@ -86,9 +107,9 @@ moduleServer(id, function(input, output, session) {
 #          loadExpense()
 #       }
 #    })
-   # observeEvent(input$tbl_budget, {
-   #    browser()
-   # })
+   observeEvent(input$tblExpenses, {
+      browser()
+   })
    
 
 })

@@ -16,13 +16,13 @@ TBLBudget   = R6::R6Class("CONTA.TBL.BUDGET"
              ,group     = "IDGROUP"
              ,category  = "IDCATEGORY"
              ,method    = "IDMETHOD"             
-             ,year      = "DATEY"
-             ,month     = "DATEM"
-             ,day       = "DATED"
+             ,dateOper  = "DATEOPE"
+             ,dateVal   = "DATEVAL"
              ,amount    = "AMOUNT"
+             ,frecuency = "FRECUENCY"             
              ,descr     = "DESCR"
+             ,active    = "ACTIVE"             
              ,sync      = "SYNC"
-             ,frecuency = "FRECUENCY"
             )
      )
 )

@@ -10,14 +10,14 @@ WEBROOT = R6::R6Class("JGG.INFO.APP"
      ,year       = 2022
      ,initialize = function(mode="prod") {
          super$initialize()
-         reg.finalizer(self,
-                  function(e) message("WEBROOT Finalizer has been called!"),
-                  onexit = TRUE)
+         # reg.finalizer(self,
+         #          function(e) message("WEBROOT Finalizer has been called!"),
+         #          onexit = TRUE)
          self$factory = OBJFactory$new(mode)
          self$tools   = OBJTools$new()
      }
      ,finalize   = function() {
-        message("WEBROOT finalize - Destruyendo objeto")
+        # message("WEBROOT finalize - Destruyendo objeto")
         self$factory$finalize()
         self$factory = NULL
      }

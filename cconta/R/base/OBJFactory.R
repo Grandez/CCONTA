@@ -15,13 +15,13 @@ OBJFactory = R6::R6Class("JGG.CCONTA.FACTORY"
           private$DBFactory = BBDDFactory$new(mode)
           private$objects   = HashMap$new()
           self$tools        = OBJTools$new()
-          reg.finalizer(self,
-                  function(e) message("OBJFactory Finalizer has been called!"),
-                  onexit = TRUE)
+          # reg.finalizer(self,
+          #         function(e) message("OBJFactory Finalizer has been called!"),
+          #         onexit = TRUE)
           
        }
       ,finalize       = function() { 
-          message("OBJFactory FINALIZE Clearing factory")
+          # message("OBJFactory FINALIZE Clearing factory")
           if (!is.null(DBFactory)) DBFactory$finalize()
           private$objects   = HashMap$new() # Objects to garbage collector
           gc(verbose=FALSE)
