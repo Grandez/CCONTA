@@ -7,7 +7,7 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
   ,inherit    = PNLBase 
   ,public = list(
       byDateValue = TRUE     
-     ,initialize  = function (id, session) {
+     ,initialize  = function (id, parent, session) {
          super$initialize(id, session, TRUE)
          private$frmSummary   = factory$getObject("FrameSummary",  force = TRUE)
          private$frmIncomes   = factory$getObject("FrameIncomes",  force = TRUE)
@@ -40,7 +40,7 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
 )
 
 moduleServer(id, function(input, output, session) {
-   pnl = WEB$getPanel(id, PNLStatus, session)
+   pnl = WEB$getPanel(id, PNLStatus, NULL, session)
 
    makePlot = function() {
       df = pnl$getDataSummary()

@@ -7,7 +7,7 @@ PNLDetail = R6::R6Class("CONTA.PNL.DETAIL"
   ,inherit    = PNLBase 
   ,public = list(
       data = NULL
-     ,initialize     = function (id, session) {
+     ,initialize     = function (id, parent, session) {
           super$initialize(id, session, TRUE)
           private$objMov = factory$getObject("Movements")
      }
@@ -82,7 +82,7 @@ PNLDetail = R6::R6Class("CONTA.PNL.DETAIL"
 )
 
 moduleServer(id, function(input, output, session) {
-   pnl = WEB$getPanel(id, PNLDetail, session)
+   pnl = WEB$getPanel(id, PNLDetail, NULL, session)
    
    flags = reactiveValues(
          refresh    = FALSE

@@ -21,9 +21,9 @@ WEBROOT = R6::R6Class("JGG.INFO.APP"
         self$factory$finalize()
         self$factory = NULL
      }
-     ,getPanel   = function (id, object = NULL, session=getDefaultReactiveDomain(), ...) {
+     ,getPanel   = function (id, object = NULL, parent=NULL, session=getDefaultReactiveDomain(), ...) {
         private$args = list(...)
-        super$getPanel(id,object,session)
+        super$getPanel(id,object,parent,session)
      }
      ,makeCombo = function(df, sorted=TRUE, id="id", name="name") {
          data = as.list(df[,id])

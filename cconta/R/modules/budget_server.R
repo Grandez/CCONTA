@@ -6,7 +6,7 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
   ,lock_class = TRUE
   ,inherit    = PNLBase   
   ,public = list(
-      initialize     = function (id, session) {
+      initialize     = function (id, parent, session) {
          super$initialize(id, session, TRUE)
          private$frmSummary   = factory$getObject("FrameSummary",  force = TRUE)
          private$frmIncomes   = factory$getObject("FrameIncomes",  force = TRUE)
@@ -48,7 +48,7 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
 )
    
 moduleServer(id, function(input, output, session) {
-    pnl = WEB$getPanel(id, PNLBudget, session)
+    pnl = WEB$getPanel(id, PNLBudget, NULL, session)
 
    refresh = function () {
       #pnl$refreshData()

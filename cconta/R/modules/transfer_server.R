@@ -7,7 +7,7 @@ PNLXfer = R6::R6Class("CONTA.PNL.TARNSFER"
   ,inherit    = PNLBase
   ,public     = list(
       accounts = NULL
-     ,initialize    = function(id, session) {
+     ,initialize    = function(id, parent, session) {
          super$initialize(id, session, TRUE) 
          private$obj = factory$getObject("Transfers")
          self$accounts = obj$getAccounts()
@@ -25,7 +25,7 @@ PNLXfer = R6::R6Class("CONTA.PNL.TARNSFER"
 
 moduleServer(id, function(input, output, session) {
 
-   pnl = WEB$getPanel(id, PNLXfer, session)
+   pnl = WEB$getPanel(id, PNLXfer, NULL, session)
 
    validate  = function() {
       val = suppressWarnings(as.integer(input$cboFrom))

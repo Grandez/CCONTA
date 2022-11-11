@@ -8,7 +8,7 @@ PNLPosition = R6::R6Class("CONTA.PNL.POSITION"
   ,public     = list(
       data = list()
      ,position = NULL
-     ,initialize    = function(id, session) {
+     ,initialize    = function(id, parent, session) {
          super$initialize(id, session, TRUE) 
          private$tblAcc  = factory$getTable("Accounts")
          private$xfer = factory$getObject("Transfers")
@@ -44,7 +44,7 @@ PNLPosition = R6::R6Class("CONTA.PNL.POSITION"
 
 moduleServer(id, function(input, output, session) {
 
-   pnl = WEB$getPanel(id, PNLPosition, session)
+   pnl = WEB$getPanel(id, PNLPosition, NULL, session)
 
    flags = reactiveValues(
        type    = FALSE

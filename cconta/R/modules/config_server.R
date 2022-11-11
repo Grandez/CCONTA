@@ -14,7 +14,7 @@ PNLConfig = R6::R6Class("CONTA.PNL.CONFIG"
       }
    )  
   ,public     = list(
-      initialize    = function(id, session) {
+      initialize    = function(id, parent, session) {
          super$initialize(id, session, TRUE) 
          private$obj = factory$getObject("Movements")
       }

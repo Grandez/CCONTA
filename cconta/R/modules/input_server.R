@@ -16,7 +16,7 @@ PNLInput = R6::R6Class("CONTA.PNL.INPUT"
   ,public     = list(
       data = list()
      ,itemized = FALSE
-     ,initialize    = function(id, session) {
+     ,initialize    = function(id, parent, session) {
          super$initialize(id, session, TRUE) 
          private$obj = factory$getObject("Movements")
       }
@@ -61,7 +61,7 @@ PNLInput = R6::R6Class("CONTA.PNL.INPUT"
 
 moduleServer(id, function(input, output, session) {
 
-   pnl = WEB$getPanel(id, PNLInput, session)
+   pnl = WEB$getPanel(id, PNLInput, NULL, session)
 
    flags = reactiveValues(
        type    = FALSE
