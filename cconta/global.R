@@ -23,5 +23,5 @@ suppressMessages(library(JGGShiny,          warn.conflicts = FALSE))
 files = list.files(path="R", pattern="\\.R$", recursive=TRUE, full.names=T, ignore.case=F)
 sapply(files,source)
 
-#WEB = JGGWEBROOT$new("test")
+#WEB = JGsGWEBROOT$new("test")
 WEB = WEBROOT$new()

@@ -1,21 +1,15 @@
 modConfigInput <- function(id, title) {
     ns <- NS(id)
-    main = tagList(
-       
-
-awesomeRadio( inputId = "swType",NULL,inline=TRUE,checkbox=TRUE
-             ,choices = c(Cuentas="1", Grupos="2"),selected = "1")
-
-
-         ,reactableOutput(ns("tblSummary"))
-        ,reactableOutput(ns("tblIncomes"))
-        ,reactableOutput(ns("tblExpenses"))
-       
+    left = tagList(
+        guiCombo(ns("cboType"),choices=c("Todos"=0,"Gastos"=1,"Ingresos"=2))
+       ,guiSwitchLabel(ns("swActive"),"Inactivos")
     )
-    # tabPanel(label, value=id
-    #     ,reactableOutput(ns("tblSummary"))
-    #     ,reactableOutput(ns("tblIncomes"))
-    #     ,reactableOutput(ns("tblExpenses"))
-    # )
-    list(left=NULL, main=main, right=NULL)
+    main = tagList(
+       fluidRow( column(1)
+                ,column(5,h3("Grupos"),guiTable(ns("tblGroups")))
+                ,column(1)
+                ,column(5, h3("Categorias"),guiTable(ns("tblCategories")))
+               )
+    )
+    list(left=left, main=main, right=NULL)
 }

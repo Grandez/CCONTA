@@ -4,6 +4,6 @@ ui_status = function(id) {
       guiBox(ns("boxPlot"),     "Plot",      plotlyOutput(ns("plot")))
      ,guiBox(ns("boxSummary"),  "Situacion", guiTable(ns("tblSummary")))
      ,guiBox(ns("boxIngresos"), "Ingresos",  guiTable(ns("tblIncomes")))
-     ,guiBox(ns("boxGstos"),    "Gastos",    guiTable(ns("tblExpenses")))
+     ,guiBox(ns("boxGastos"),   "Gastos",    guiTable(ns("tblExpenses")))
    )
 }
