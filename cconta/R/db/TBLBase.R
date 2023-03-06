@@ -77,7 +77,7 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
           private$changed = list()
       }
       ,set      = function(...) {
-          args = base$args2list(...)
+          args = JGGTools::args2list(...)
           lapply(names(args), function (field) setField(field, args[[field]]))
           invisible(self)
       }

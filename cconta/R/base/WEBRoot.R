@@ -7,7 +7,7 @@ WEBROOT = R6::R6Class("JGG.INFO.APP"
       print      = function() { message("WEB Singleton") }     
      ,factory    = NULL
      ,tools      = NULL
-     ,year       = 2022
+     ,year       = lubridate::year(Sys.Date())
      ,initialize = function(mode="prod") {
          super$initialize()
          # reg.finalizer(self,

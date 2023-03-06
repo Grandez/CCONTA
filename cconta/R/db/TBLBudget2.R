@@ -1,22 +1,25 @@
-TBLBudget   = R6::R6Class("CONTA.TBL.BUDGET"
+TBLBudget2   = R6::R6Class("CONTA.TBL.BUDGET2"
     ,inherit    = TBLBase
     ,portable   = FALSE
     ,cloneable  = FALSE
     ,lock_class = TRUE
     ,public = list(
           initialize = function(name, db=NULL) {
-             super$initialize(name, private$tblName, fields=private$fields,key=private$key, db=db)
+             super$initialize(name, private$tblName, fields=private$fields,db=db)
           }
      )
      ,private = list (
            tblName = "BUDGET"
-          ,key = c("group", "category", "year", "month")
+          ,key = c("id")
           ,fields = list(
-              idGroup     = "IDGROUP"
-             ,idCategory  = "IDCATEGORY"
-             ,year      = "NYEAR"
-             ,month     = "NMONTH"             
+              id        = "ID"
+             ,group     = "IDGROUP"
+             ,category  = "IDCATEGORY"
+             ,method    = "IDMETHOD"             
+             ,dateOper  = "DATEOPE"
+             ,dateVal   = "DATEVAL"
              ,amount    = "AMOUNT"
+             ,frecuency = "FRECUENCY"             
              ,descr     = "DESCR"
              ,active    = "ACTIVE"             
              ,sync      = "SYNC"

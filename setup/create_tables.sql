@@ -44,7 +44,7 @@ CREATE TABLE METHODS  (
 -- Tabla de Grupos de gastos
 DROP TABLE  IF EXISTS GROUPS CASCADE;
 CREATE TABLE GROUPS  (
-    ID        INT          NOT NULL 
+    ID        INT UNSIGNED NOT NULL 
    ,NAME      VARCHAR(255) NOT NULL -- Nombre del grupo
    ,DESCR     TEXT   
    ,ACTIVE    TINYINT      DEFAULT 1      
@@ -59,7 +59,7 @@ CREATE TABLE GROUPS  (
 -- Tabla de Categorias de gasto
 DROP TABLE  IF EXISTS CATEGORIES CASCADE;
 CREATE TABLE CATEGORIES  (
-    IDGROUP   INT           NOT NULL   -- ID Grupo
+    IDGROUP   INT UNSIGNED  NOT NULL   -- ID Grupo
    ,ID        INT UNSIGNED  NOT NULL   -- ID Cuenta Cuenta: IInnnmmm - II Origen / nnn grupo / mmm Cuenta    
    ,NAME      VARCHAR(255)  NOT NULL   -- Nombre de la cuenta
    ,DESCR     TEXT   
@@ -71,21 +71,34 @@ CREATE TABLE CATEGORIES  (
    ,UNIQUE      (IDGROUP, ID, NAME)   -- Avoid duplicate names
 );
 
+-- -- Tabla de Presupuestos
+-- DROP TABLE  IF EXISTS BUDGET CASCADE;
+-- CREATE TABLE BUDGET    (
+--     ID         INT UNSIGNED   NOT NULL             COMMENT 'ID Unico prefijado'
+--    ,IDGROUP    INT UNSIGNED   NOT NULL             COMMENT 'ID del grupo'
+--    ,IDCATEGORY INT UNSIGNED   NOT NULL             COMMENT 'ID de la categoria'
+--    ,IDMETHOD   INT UNSIGNED                        COMMENT 'ID del metodo de pago'
+--    ,DATEOPE    DATE           NOT NULL             COMMENT 'Fecha de operacion'
+--    ,DATEVAL    DATE           NOT NULL             COMMENT 'Fecha de valor'
+--    ,FRECUENCY  TINYINT        NOT NULL DEFAULT 1   COMMENT 'Frecuencia del gasto en dias (0=puntual, mensual, bimensual, etc)'
+--    ,AMOUNT     DECIMAL(7,3)   NOT NULL -- Importe
+--    ,DESCR      TEXT   
+--    ,ACTIVE    TINYINT         DEFAULT 1      
+--    ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
+--    ,PRIMARY KEY (ID, DATEVAL)         -- Primary key
+-- );
+
 -- Tabla de Presupuestos
-DROP TABLE  IF EXISTS BUDGET CASCADE;
 CREATE TABLE BUDGET    (
-    ID         INT UNSIGNED   NOT NULL             COMMENT 'ID Unico prefijado'
-   ,IDGROUP    INT            NOT NULL             COMMENT 'ID del grupo'
+    IDGROUP    INT UNSIGNED   NOT NULL             COMMENT 'ID del grupo'
    ,IDCATEGORY INT UNSIGNED   NOT NULL             COMMENT 'ID de la categoria'
-   ,IDMETHOD   INT UNSIGNED                        COMMENT 'ID del metodo de pago'
-   ,DATEOPE    DATE           NOT NULL             COMMENT 'Fecha de operacion'
-   ,DATEVAL    DATE           NOT NULL             COMMENT 'Fecha de valor'
-   ,FRECUENCY  TINYINT        NOT NULL DEFAULT 1   COMMENT 'Frecuencia del gasto en dias (0=puntual, mensual, bimensual, etc)'
-   ,AMOUNT     DECIMAL(7,3)   NOT NULL -- Importe
+   ,NYEAR      SMALLINT       NOT NULL             COMMENT 'Numero del mes'   
+   ,NMONTH     TINYINT        NOT NULL             COMMENT 'Numero del mes'
+   ,AMOUNT     DECIMAL(7,3)   DEFAULT 0.0          COMMENT 'Importe'
    ,DESCR      TEXT   
-   ,ACTIVE    TINYINT         DEFAULT 1      
+   ,ACTIVE     TINYINT         DEFAULT 1      
    ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
-   ,PRIMARY KEY (ID, DATEVAL)         -- Primary key
+   ,PRIMARY KEY (IDGROUP, IDCATEGORY, NYEAR, NMONTH)   -- Avoid duplicate names   
 );
 
 -- Tabla de Gastos

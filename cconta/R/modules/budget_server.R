@@ -8,54 +8,63 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
   ,public = list(
       initialize     = function (id, parent, session) {
          super$initialize(id, session, TRUE)
+         private$objBudget    = factory$getObject("Budget")
+         # browser()
+         # df = objBudget$getBudget()
          private$frmSummary   = factory$getObject("FrameSummary",  force = TRUE)
          private$frmIncomes   = factory$getObject("FrameIncomes",  force = TRUE)
          private$frmExpenses  = factory$getObject("FrameExpenses", force = TRUE)
       }
      ,getSummary  = function (target) { frmSummary$getReactable (target) }
-     ,getIncomes  = function (target) { frmIncomes$getReactable (target) }
-     ,getExpenses = function (target) { 
-        data = frmExpenses$getData() 
-        cnames = lapply(1:12, function(x) month_short(x))
-        names(cnames) = as.character(seq(1,12))
-        tbl = makeGroupedTable( data
-                               ,group="Group", columns=as.character(seq(1,12)), method="sum"
-                               ,colNames=cnames, click=ns("tblExpenses")
-                               ,hide=c("idGroup", "idCategory", "row")
-                              )
-        tbl
-      # ,getReactable = function (idTable) {
-      #     cols = lapply(1:12, function(x) colDef(name=monthLong[x], aggregate = "sum"))
-      #     names(cols) = as.character(seq(1,12))
-      #     cols[["idGroup"]]    = colDef(show = FALSE)
-      #     cols[["idCategory"]] = colDef(show = FALSE)
-      #     cols[["Group"]]      = colDef(name = "Grupo",     width = 150)
-      #     cols[["Category"]]   = colDef(name = "Categoria", width = 200)
-      #     if ("row" %in% colnames(dfData)) cols[["row"]] = colDef(show = FALSE)
-      #    
-      #     reactable(private$dfData, groupBy = "Group", columns = cols) # , onClick = jscode(idTable) )
-      # }
-      #   
-      }
+     ,getIncomes  = function (target) { makeTableBudget(objBudget$getIncomes(),  target) }
+     ,getExpenses = function (target) { makeTableBudget(objBudget$getExpenses(), target) }
      
      ,loadBudget = function () { obj$getBudget() }
+     ,updateBudget = function() {
+        browser()
+         data = list( group = vars$row$idGroup
+                     ,category = vars$row$idCategory
+                     ,year     = WEB$year
+                     ,from     = vars$from
+                     ,to       = vars$to
+                     ,amount   = vars$amount
+                    )
+        objBudget$setBudget(data)  
+        invisible(self)
+     }
    )
   ,private = list(
       frmSummary   = NULL
      ,frmIncomes   = NULL
      ,frmExpenses  = NULL
+     ,objBudget    = NULL
    )
 )
    
 moduleServer(id, function(input, output, session) {
     pnl = WEB$getPanel(id, PNLBudget, NULL, session)
 
+   popupModal = function(failed = FALSE) {
+      info = pnl$vars$row
+      modalDialog(
+         tags$table(
+             tags$tr(tags$td("Grupo"),           tags$td(strong(info$Group)))
+            ,tags$tr(tags$td("Categoria"),       tags$td(strong(info$Category)))
+            ,tags$tr(tags$td(strong("Desde")),   tags$td(guiComboMonth(ns("cboFrmFrom"), info$month)))
+            ,tags$tr(tags$td(strong("Hasta")),   tags$td(guiComboMonth(ns("cboFrmTo"), 12)))
+            ,tags$tr(tags$td(strong("Importe")), tags$td(guiNumericInput (ns("numFrmAmount"),    NULL, info[[info$month]])))
+         )
+        ,if (failed)
+             div(tags$b("You did not input anything", style = "color: red;")),
+             footer = tagList(
+                modalButton("Cancel"),
+                actionButton(ns("btnFrmOK"), "OK")
+             )
+         )
+   }    
    refresh = function () {
-      #pnl$refreshData()
-      output$tblSummary  = renderReactable({ pnl$getSummary(ns("tblSummary"))   })
-      output$tblIncomes  = renderReactable({ pnl$getIncomes (ns("tblIncomes"))  })
-      tbl = pnl$getExpenses(ns("tblExpenses"))
-      output$tblExpenses = updTable({tbl})
+      output$tblExpenses = updTable({ pnl$getExpenses(ns("tblExpenses")) })
+      output$tblIncomes  = updTable({ pnl$getIncomes(ns("tblIncomes")) })
    }
    if (!pnl$loaded) {
       pnl$loaded = TRUE
@@ -108,7 +117,20 @@ moduleServer(id, function(input, output, session) {
 #       }
 #    })
    observeEvent(input$tblExpenses, {
-      browser()
+      month = suppressWarnings(as.integer(input$tblExpenses$colName))
+      pnl$vars$row = jsonlite::fromJSON(input$tblExpenses$detail)
+      pnl$vars$row$month = month
+   
+      if (!is.na(month) && !is.null(pnl$vars$row$idCategory)) {
+          showModal(popupModal())
+      }
+   })
+   observeEvent(input$btnFrmOK, {
+      pnl$vars$from = as.integer(input$cboFrmFrom)
+      pnl$vars$to   = as.integer(input$cboFrmTo)
+      pnl$vars$amount = input$numFrmAmount
+      removeModal()
+      pnl$updateBudget()
    })
    
 

@@ -1,6 +1,6 @@
-mod_config_server <- function(id, session) {
+mod_config2_server <- function(id, session) {
 ns = NS(id)
-PNLConfig = R6::R6Class("CONTA.PNL.CONFIG"
+PNLConfig2 = R6::R6Class("CONTA.PNL.CONFIG"
   ,portable   = FALSE
   ,cloneable  = FALSE
   ,lock_class = TRUE
@@ -74,7 +74,7 @@ PNLConfig = R6::R6Class("CONTA.PNL.CONFIG"
 )
 
 moduleServer(id, function(input, output, session) {
-   pnl = WEB$getPanel(id, PNLConfig, NULL, session)
+   pnl = WEB$getPanel(id, PNLConfig2, NULL, session)
    
    jscode = function(idTable) {
       data = paste("{ row: rowInfo.index + 1, colName: colInfo.id")
@@ -132,7 +132,7 @@ moduleServer(id, function(input, output, session) {
      )      
    
      if (categories) cols$idGroup = colDef(show = FALSE)   
-     reactable(df, columns=cols, pagination = FALSE, onClick=onClick, highlight = TRUE
+     reactable(df, columns=cols, pagination = FALSE, onClick=onClick
                  , rowStyle = function(index) {
                       if (df[index, "active"] == 0) {
                           list(background = "lightGrey", fontStyle = "italic")
