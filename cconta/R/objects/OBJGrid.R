@@ -36,6 +36,10 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
       ,getGrid = function (data) {
          if (missing(data)) data = dfData
          
+         if (nrow(data) == 0) {
+            tmp = data.frame(active=integer(0))
+            data = cbind(data,tmp)
+         }
          if(! "active" %in% colnames(data))  data$active = 1
          
          # los juntamos y los sumamos. 
