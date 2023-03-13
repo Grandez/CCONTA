@@ -1,0 +1,1 @@
+MOV_TYPE = list(Real = 1, Expected = 2, Provision = 3)

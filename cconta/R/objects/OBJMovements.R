@@ -77,6 +77,14 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          }
          df
       }
+      ,getPrevision  = function (year)  {
+         if (missing(year)) year = self$year
+         tblMovements$recordset( 
+             dateVal = list(name="dateVal", func = "YEAR", op="eq", value=year)
+            ,type    = list(value = MOV_TYPE$Expected)
+         )
+      }
+      
       ,set = function (...) {
           private$mov = jgg_list_merge(mov, list(...))
           invisible(self)
@@ -163,6 +171,32 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          if (nrow(method) == 0) return (as.character(record[1,"idMethod"]))
          as.character(method[1,"name"])
       }
+     ,loadBudget = function () {
+        # Creamos un df clave/mes/0 (donde clave va de 1 a 12)
+        dft = data.frame(month=seq(1,12), amount=0)
+
+        # Ahora hacemos un full join por amount (que es la clave)
+        #Y tenemos group/category/mes/0
+        df2 = dfBase[,c("idGroup", "idCategory")]
+        df2$amount = 0
+        dfZeroes = full_join(df2,dft, by="amount", multiple="all")
+
+        #Cogemos el presupuesto en funcion del agno
+        dfb = tblBudget$table(year = self$year, active = 1)
+        dfb = dfb[,c("idGroup", "idCategory", "month", "amount")]
+        
+        # los juntamos y los sumamos. 
+        # Ahora tenemos por cada grupo/categoria 12 registros
+        
+        df = rbind(dfZeroes, dfb)
+        df = df %>% dplyr::group_by(idGroup, idCategory, month) %>% 
+                    dplyr::summarise(amount = sum(amount), .groups="keep")
+        
+        #Ahora le hacemos spread
+        df = tidyr::spread(df, month, amount)
+        private$dfBudget = dplyr::inner_join(dfBase, df,by=c("idGroup", "idCategory"))
+     }
+      
    )
 )
 

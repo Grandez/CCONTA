@@ -4,33 +4,32 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
    ,lock_class = TRUE
    ,inherit    = OBJBase
    ,public = list(
-       year = lubridate::year(Sys.Date())
-      ,initialize = function(factory) {
+       initialize = function(factory) {
          super$initialize(factory, TRUE)
          private$tblBudget     = factory$getTable("Budget")
          private$tblGroups     = factory$getTable("Groups")
          private$tblCategories = factory$getTable("Categories")
+         private$objGrid       = factory$getObject("Grid")
          refresh()
       }
       ,refresh   = function() {
          # Se debe llamar cuando han cambiado grupos o categorias
-         loadBase()
-         loadBudget()
+         df = tblBudget$table(year = self$year, active = 1)
+         private$dfBudget = df[,c("idGroup", "idCategory", "month", "amount")]
+         private$dfTypes  = objGrid$getDataBase()[,c("idGroup", "idCategory", "income", "expense")]
       }
       ,getExpenses   = function() {
-         df = dfBudget %>% filter(groupExpense == 1 & catExpense == 1)
-         removeColumns(df)
+         df = dplyr::inner_join(dfBudget, dfTypes, by=c("idGroup", "idCategory"))
+         df = df[df$expense == 1,] # dfBudget %>% filter(grpExpense == 1 & catExpense == 1)
+         objGrid$getGrid(df[,1:4])
       }
       ,getIncomes   = function() {
-         df = dfBudget %>% filter(groupIncome == 1 & catIncome == 1)
-         removeColumns(df)
-      }
-      
-      # ,getBudget     = function() {
-      #    df = loadBudgetBase()
-      #    dfb = loadBudget()
-      #    mountBudget(df, dfb)
-      # }
+         df = dplyr::inner_join(dfBudget, dfTypes, by=c("idGroup", "idCategory"))
+         df = df[df$income == 1,] # df = dfBudget %>% filter(grpIncome == 1 & catIncome == 1)
+         objGrid$getGrid(df[,1:4])
+       }
+      ,getExpensesTotal  = function() { totals(getExpenses()) }
+      ,getIncomesTotal   = function() { totals(getIncomes())  }
       ,setBudget     = function(data) {
          tryCatch({
             tblBudget$db$begin()
@@ -52,7 +51,9 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
       ,tblGroups     = NULL
       ,tblCategories = NULL
       ,dfBase        = NULL
+      ,dfTypes       = NULL
       ,dfBudget      = NULL
+      ,objGrid       = NULL
       ,loadBase      = function () {
         # Cogemos los grupos activos
         dfg = tblGroups$table(active = 1)
@@ -90,27 +91,9 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
         df = tidyr::spread(df, month, amount)
         private$dfBudget = dplyr::inner_join(dfBase, df,by=c("idGroup", "idCategory"))
      }
-    ,removeColumns = function (df) {
-         df[,c("catIncome", "catExpense")] = NULL
-         df[,c("groupIncome", "groupExpense")] = NULL
-         df
-    }   
-     # ,mountBudget = function (df, dfb) {
-     #    for (row in 1:nrow(df)) {
-     #       if (df[row, "idCategory"] == 0) next
-     #       data = dfb[dfb$category == df[row, "idCategory"],]
-     #       if(nrow(data) == 0) next
-     #       # Los meses empiezan en la columna 5
-     #       start = data[1,"month"]
-     #       repeat {
-     #          df[row, start + 4] = data[1, "amount"]
-     #          inc = ifelse (data[1, "frequency"] == 0, 12, data[1, "frequency"])
-     #          start = start + inc
-     #          if (start > 12) break
-     #       }
-     #    }
-     #    df
-     # }
-   )
+   ,totals = function (df) {
+         colSums(df[,5:16]) # Cogemos solo los valores numericos
+    }
+  )
 )
 

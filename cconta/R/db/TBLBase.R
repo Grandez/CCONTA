@@ -130,6 +130,7 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
       }
       ,recordset = function(..., limit = 0) {
          # A falta de nombre mejor
+         # Recibe cada parametro en una lista con nombre
          filter = mountClause(...)
          qry = paste("SELECT * FROM ", tblName, filter$sql)
          if (limit > 0) {
@@ -387,6 +388,8 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
           list(sql=paste("WHERE", cond),values=values)
       }
       ,mountClause = function(...) {
+         # Son listas con nombre, no se pueden meter en una lista unica
+         # por que si no no podemos detectar si es un solo campo o varios
          parseParameter = function (item) {
             if (is.null(item$op)) item$op = "eq"
             op = tolower(item$op)
@@ -414,11 +417,6 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
             }
             stop(paste("Invalid op type in query:", op, "on", item$name))
           }
-
-          data = list(...)
-          if (length(data) == 0) return (list(sql=NULL, values=NULL))
-          labels = names(data)
-
           fillName = function (idx) {
              item = data[[idx]]
              if (is.null(item$name)) {
@@ -428,6 +426,10 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
              item$name = fields[[item$name]]
              item
           }
+
+          data = list(...)
+          if (length(data) == 0) return (list(sql=NULL, values=NULL))
+          labels = names(data)
 
           # Aplica el nombre de la columna
           ndata = lapply(1:length(data), function(idx) fillName(idx))

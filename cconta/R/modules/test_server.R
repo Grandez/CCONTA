@@ -9,7 +9,10 @@ PNLTest = R6::R6Class("CONTA.PNL.TEST"
       data = list()
      ,position = NULL
      ,initialize    = function(id, parent, session) {
-#          super$initialize(id, session, TRUE) 
+        browser()
+          super$initialize(id, session, TRUE) 
+          private$objMov        = factory$getObject("Grid")
+          browser()
 #          private$tblAcc  = factory$getTable("Accounts")
 #          private$xfer = factory$getObject("Transfers")
 # #         private$tblMov  = factory$gettable("Accounts")
@@ -32,10 +35,11 @@ moduleServer(id, function(input, output, session) {
 message("Entering server")
    pnl = WEB$getPanel(id, PNLTest, NULL, session)
    browser()
-output$table <- renderReactable({reactable(iris)})
-   # if (!pnl$loaded) {
-   #    pnl$calculatePosition()
-   #    output$tblPosition  = renderReactable({ reactable(pnl$data$accounts) })
-   # }  
+# output$table <- renderReactable({reactable(iris)})
+   if (!pnl$loaded) {
+      pnl$refresh()
+      # pnl$calculatePosition()
+      # output$tblPosition  = renderReactable({ reactable(pnl$data$accounts) })
+   }
 })
 }
