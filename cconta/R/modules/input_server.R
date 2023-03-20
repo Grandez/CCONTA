@@ -207,7 +207,7 @@ moduleServer(id, function(input, output, session) {
       mtype = as.integer(input$cboType)
       if (pnl$expense) mtype = mtype * -1
       if (!pnl$itemized) {
-          id = pnl$add( dateOper = input$dtInput,    dateVal = input$dtInput
+          id = pnl$add( dateOper = Sys.Date(),    dateVal = input$dtInput
                        ,amount   = input$impExpense
                        ,note     = input$txtNote,    tags   = input$txtTags)
           if (id > 0) {

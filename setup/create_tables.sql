@@ -90,11 +90,12 @@ CREATE TABLE CATEGORIES  (
 
 -- Tabla de Presupuestos
 CREATE TABLE BUDGET    (
-    IDGROUP    INT UNSIGNED   NOT NULL             COMMENT 'ID del grupo'
-   ,IDCATEGORY INT UNSIGNED   NOT NULL             COMMENT 'ID de la categoria'
-   ,NYEAR      SMALLINT       NOT NULL             COMMENT 'Numero del mes'   
-   ,NMONTH     TINYINT        NOT NULL             COMMENT 'Numero del mes'
-   ,AMOUNT     DECIMAL(7,3)   DEFAULT 0.0          COMMENT 'Importe'
+    IDGROUP    INT UNSIGNED   NOT NULL           COMMENT 'ID del grupo'
+   ,IDCATEGORY INT UNSIGNED   NOT NULL           COMMENT 'ID de la categoria'
+   ,NYEAR      SMALLINT       NOT NULL           COMMENT 'Numero del mes'   
+   ,NMONTH     TINYINT        NOT NULL           COMMENT 'Numero del mes'
+   ,AMOUNT     DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Importe'
+   ,EXPENSE    TINYINT        DEFAULT -1         COMMENT 'Es un gasto (-1) o un ingreso (1)'   
    ,DESCR      TEXT   
    ,ACTIVE     TINYINT         DEFAULT 1      
    ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
@@ -123,8 +124,8 @@ CREATE TABLE  MOVEMENTS  (
    ,IDCATEGORY INT UNSIGNED   NOT NULL           COMMENT 'Categoria del gasto'
    ,AMOUNT     DECIMAL(7,3)   NOT NULL           COMMENT 'Importe el gasto'
    ,NOTE       VARCHAR(255)          -- Comentarios
-   ,EXPENSE    TINYINT        DEFAULT 1          COMMENT 'Es un gasto (1) o in ingreso'
-   ,TYPE       TINYINT        DEFAULT 1          COMMENT 'Tipo de gasto segun codigo'
+   ,EXPENSE    TINYINT        DEFAULT -1         COMMENT 'Es un gasto (-1) o un ingreso (1)'
+   ,TYPE       TINYINT        DEFAULT  1         COMMENT 'Tipo de gasto segun codigo'
    ,PARENT     INT  UNSIGNED                     COMMENT 'Si es un gasto desglosado, id del padre'   
    ,ACTIVE     TINYINT        DEFAULT 1   
    ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.      

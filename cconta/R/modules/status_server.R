@@ -4,38 +4,26 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
   ,portable   = FALSE
   ,cloneable  = FALSE
   ,lock_class = TRUE
-  ,inherit    = PNLBase 
+  ,inherit    = PNLStatusBase 
   ,public = list(
-      byDateValue = TRUE     
-     ,initialize  = function (id, parent, session) {
+      initialize  = function (id, parent, session) {
          super$initialize(id, session, TRUE)
-         private$frmSummary   = factory$getObject("FrameSummary",  force = TRUE)
-         private$frmIncomes   = factory$getObject("FrameIncomes",  force = TRUE)
-         private$frmExpenses  = factory$getObject("FrameExpenses", force = TRUE)
          private$objMovements = factory$getObject("Movements")
+         # Los tipos son numeros secuenciales (1,2,3)
+         self$vars$types = rep(TRUE, max(unlist(CTES$TYPE)))
+#         objMovements$loadMovements()
       }
      ,refreshData = function() {
-        data = objMovements$getExpenses()
-        frmExpenses$set(data, dateValue = byDateValue)
-        #frmExpenses$set(objMovements$getExpenses(), dateValue = byDateValue)
-        data = objMovements$getIncomes ()
-        frmIncomes$set (data, dateValue = byDateValue)
-        #frmIncomes$set (objMovements$getIncomes (), dateValue = byDateValue)
-        totExpenses = frmExpenses$getTotal()
-        totIncomes  = frmIncomes$getTotal()
-        frmSummary$setIncomes(totIncomes)
-        frmSummary$setExpenses(totExpenses)
+        browser()
+        data = objMovements$getMovements()
+        data = data[data$type %in% which(self$vars$types == TRUE),]
+        data$month = lubridate::month(data$dateVal)
+        df = data[,c("idGroup", "idCategory", "month", "expense", "amount")]
+        objPage$setData(df)
      }
-     ,getTableSummary  = function (target) { frmSummary$getReactable (target) }
-     ,getTableIncomes  = function (target) { frmIncomes$getReactable (target) }
-     ,getTableExpenses = function (target) { frmExpenses$getReactable(target) }
-     ,getDataSummary   = function ()       { frmSummary$getData ()            }     
    )
   ,private = list(
-      frmSummary   = NULL
-     ,frmIncomes   = NULL
-     ,frmExpenses  = NULL
-     ,objMovements = NULL
+     objMovements = NULL
    )
 )
 
@@ -58,13 +46,26 @@ moduleServer(id, function(input, output, session) {
       fig      
    }
    refresh = function () {
+      message("refresh")
       pnl$refreshData()
-      output$tblSummary  = renderReactable({ pnl$getTableSummary(ns("tblSummary"))   })
-      output$tblIncomes  = renderReactable({ pnl$getTableIncomes (ns("tblIncomes"))  })
-      output$tblExpenses = renderReactable({ pnl$getTableExpenses(ns("tblExpenses")) })
-      output$plot        = renderPlotly   ({ makePlot()                         })
+      output$tblExpenses = updTable({ pnl$getExpenses(ns("tblExpenses")) })
+      output$tblIncomes  = updTable({ pnl$getIncomes(ns("tblIncomes")) })
+      output$tblSummary  = updTable({ pnl$getSummary() })
+#      output$plot        = renderPlotly   ({ makePlot()  })
    }
+   observeEvent(input$swExpected, {
+              message("swExpected")
+      pnl$vars$types[CTES$TYPE$Expected] = input$swExpected
+      refresh()
+   }, ignoreInit = TRUE)
+   observeEvent(input$swProvision, {
+      message("swProvision")
+      pnl$vars$types[CTES$TYPE$Provision] = input$swExpected
+      refresh()
+   }, ignoreInit = TRUE)
+   
    if (!pnl$loaded) {
+      message("Loading")
       pnl$loaded = TRUE
       refresh()
    }

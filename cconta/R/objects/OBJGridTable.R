@@ -14,18 +14,22 @@ OBJGridTable = R6::R6Class("CONTA.OBJ.GRID.TABLE"
       ,setData = function (data) {
          private$dfData = data
          colLast = ncol(dfData)
-         colFirst = colLast - 11
-         private$dfData$Total = rowSums(dfData[,colFirst:colLast])
+         if (colLast > 11) { # Caso sin datos
+             colFirst = colLast - 11
+             private$dfData$Total = rowSums(dfData[,colFirst:colLast])
+         }
          invisible(self)
       }
-      ,getTable = function (id = NULL) {
+      ,getTable = function (id = NULL, grouped=TRUE) {
+          mgroup = self$grouping
+          if (!grouped) mgroup = NULL
           cols = lapply(colnames(dfData), function(x) makeColDef(x))
           names(cols) = colnames(dfData)
           mtheme = reactable::reactableTheme(cellPadding = "0px 0px")
 
           reactable::reactable( dfData, width="100%", pagination = FALSE, onClick=jscode(id)
                                ,columns = cols
-                               ,groupBy = grouping
+                               ,groupBy = mgroup
                                ,theme   = mtheme
                               )
       }

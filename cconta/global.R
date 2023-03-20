@@ -25,3 +25,4 @@ sapply(files,source)
 
 #WEB = JGsGWEBROOT$new("test")
 WEB = WEBROOT$new()
+message("fin global")

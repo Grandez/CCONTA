@@ -1,16 +1,15 @@
 modStatusInput <- function(id, title) {
     ns <- NS(id)
+    left = tagList(
+        h4("Previstos"),   switchInput( inputId=ns("swExpected"), onLabel = "Unico", offLabel = "Agrupado"
+                                      ,onStatus = "danger", offStatus = "success", size="large", value=TRUE)
+       ,h4("Provisiones"),   switchInput( inputId=ns("swProvision"), onLabel = "Unico", offLabel = "Agrupado"
+                                      ,onStatus = "danger", offStatus = "success", size="large", value=TRUE)
+
+      
+       ,guiButton(ns("btnOK"),  label="Insertar",    type="success")
+       ,guiButton(ns("btnKO"),  label="Limpiar",     type="danger")       
+   )    
     main = ui_status(id)
-    # main = tagList(
-    #      guiBox(ns("boxSummary"),  "Situacion", reactableOutput(ns("tblSummary")))
-    #     ,guiBox(ns("boxIngresos"), "Ingresos",  reactableOutput(ns("tblIncomes")))
-    #     ,guiBox(ns("boxGstos"),    "Gastos",    reactableOutput(ns("tblExpenses")))
-    #    
-    # )
-    # tabPanel(label, value=id
-    #     ,reactableOutput(ns("tblSummary"))
-    #     ,reactableOutput(ns("tblIncomes"))
-    #     ,reactableOutput(ns("tblExpenses"))
-    # )
-    list(left=NULL, main=main, right=NULL)
+    list(left=left, main=main, right=NULL)
 }

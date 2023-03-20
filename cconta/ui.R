@@ -8,16 +8,17 @@ tagList(shinyjs::useShinyjs()
                  ,jsFiles  = NULL, jsInit   = NULL
                  ,titleActive = FALSE,  lang     = "es"
 # ,JGGTab(id="test",     "Test",        NULL, JGGUI("test") )     
+   ,JGGTab(id="budget",     "Presupuesto",    NULL, JGGUI("budget"))   
    ,JGGTab(id="status",     "Situacion",      NULL, JGGUI("status"))
-   ,JGGTab(id="position",   "Posicion",       NULL, JGGUI("position"))
-   ,JGGTab(id="budget",     "Presupuesto",    NULL, JGGUI("budget"))
-   ,JGGTab(id="expected",   "Prevision",      NULL, JGGUI("expected"))   
-   ,JGGTab(id="detail",     "Detalle",        NULL, JGGUI("detail"))
+   # ,JGGTab(id="position",   "Posicion",       NULL, JGGUI("position"))
 
-   ,JGGTab(id="xfer",     "Transferencias", NULL, JGGUI("xfer"))
-   ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))
+   # ,JGGTab(id="expected",   "Prevision",      NULL, JGGUI("expected"))   
+   # ,JGGTab(id="detail",     "Detalle",        NULL, JGGUI("detail"))
+   # 
+   # ,JGGTab(id="xfer",     "Transferencias", NULL, JGGUI("xfer"))
+   # ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))
 #   ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))
-   ,JGGTab(id="input",    "Entrada",        NULL, JGGUI("input") )
+   #,JGGTab(id="input",    "Entrada",        NULL, JGGUI("input") )
    # ,navbarMenu("Entrada"
    #  ,JGGTab(id="income",    "Ingresos",        NULL, JGGUI("input") ) #tabPanel("Ingresos"),
    #  ,JGGTab(id="expense",   "Gastos",        NULL, JGGUI("input") ) #tabPanel("Gastos")

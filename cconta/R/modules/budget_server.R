@@ -4,54 +4,19 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
   ,portable   = FALSE
   ,cloneable  = FALSE
   ,lock_class = TRUE
-  ,inherit    = PNLBase   
+  ,inherit    = PNLStatusBase 
   ,public = list(
-      initialize     = function (id, parent, session) {
+      initialize  = function (id, parent, session) {
          super$initialize(id, session, TRUE)
-         private$objBudget     = factory$getObject("Budget")
-         private$gridSummary   = factory$getObject("GridTable", force = TRUE)
-         private$gridIncomes   = factory$getObject("GridTable", force = TRUE, grouping="group")
-         private$gridExpenses  = factory$getObject("GridTable", force = TRUE, grouping="group")
+         private$objBudget = factory$getObject("Budget")
       }
-     ,getSummary  = function () { 
-         Ingresos = objBudget$getIncomesTotal()
-         Gastos   = objBudget$getExpensesTotal() * -1
-         df = rbind(Ingresos, Gastos)
-         Diff = colSums(df)
-         Acum = Diff
-         for (idx in 2:length(Acum)) Acum[idx] = Acum[idx] + Acum[idx - 1]
-         mat = rbind(df, Diff, Acum)
-         df = as.data.frame(mat)
-         gridSummary$setData(as.data.frame(mat))
-         gridSummary$getTable()
-      }
-     ,getIncomes  = function (target, refresh=TRUE) { 
-        if (refresh) gridIncomes$setData(objBudget$getIncomes())
-        gridIncomes$getTable(target)
-      }
-     ,getExpenses = function (target, refresh=TRUE) { 
-        if (refresh) gridExpenses$setData(objBudget$getExpenses())
-        gridExpenses$getTable(target)
-      }
-     ,loadBudget = function () { obj$getBudget() }
-     ,updateBudget = function() {
-        browser()
-         data = list( group = vars$row$idGroup
-                     ,category = vars$row$idCategory
-                     ,year     = WEB$year
-                     ,from     = vars$from
-                     ,to       = vars$to
-                     ,amount   = vars$amount
-                    )
-        objBudget$setBudget(data)  
-        invisible(self)
+     ,refreshData = function() {
+        data = objBudget$getBudget()
+        objPage$setData(data)
      }
    )
   ,private = list(
-      gridSummary   = NULL
-     ,gridIncomes   = NULL
-     ,gridExpenses  = NULL
-     ,objBudget    = NULL
+      objBudget    = NULL
    )
 )
    
@@ -75,12 +40,17 @@ moduleServer(id, function(input, output, session) {
                 actionButton(ns("btnFrmOK"), "OK")
              )
          )
-   }    
+   }  
    refresh = function () {
-      output$tblExpenses = updTable({ pnl$getExpenses(ns("tblExpenses"), TRUE) })
-      output$tblIncomes  = updTable({ pnl$getIncomes(ns("tblIncomes"), TRUE) })
+      browser()
+      message("refresh")
+      pnl$refreshData()
+      output$tblExpenses = updTable({ pnl$getExpenses(ns("tblExpenses")) })
+      output$tblIncomes  = updTable({ pnl$getIncomes(ns("tblIncomes")) })
       output$tblSummary  = updTable({ pnl$getSummary() })
+#      output$plot        = renderPlotly   ({ makePlot()                         })
    }
+   
    if (!pnl$loaded) {
       pnl$loaded = TRUE
       refresh()
