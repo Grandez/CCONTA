@@ -14,7 +14,6 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
 #         objMovements$loadMovements()
       }
      ,refreshData = function() {
-        browser()
         data = objMovements$getMovements()
         data = data[data$type %in% which(self$vars$types == TRUE),]
         data$month = lubridate::month(data$dateVal)
