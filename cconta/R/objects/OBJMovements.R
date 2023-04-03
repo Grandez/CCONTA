@@ -23,12 +23,12 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          if (!is.null(args$year)) private$year = args$year
 
          private$tblMethods    = factory$getTable("Methods")
-         private$tblGroups     = factory$getTable("Groups")
-         private$tblCategories = factory$getTable("Categories")
+         # private$tblGroups     = factory$getTable("Groups")
+         # private$tblCategories = factory$getTable("Categories")
          private$tblMovements  = factory$getTable("Movements")
          private$tblParents    = factory$getTable("Itemizeds")
          private$tblTags       = factory$getTable("Tags")
-         private$dfGroups      = tblGroups$table(active = 1)
+#         private$dfGroups      = tblGroups$table(active = 1)
          loadMovements()
        }
       ,loadMovements = function () {
@@ -42,22 +42,22 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
       ,getMovements = function () {
          private$dfMov
       }
-      ,getGroups     = function (type = c("all", "expenses", "incomes")) { 
-          mtype = "all"
-          if (!missing(type)) mtype = match.arg(type)
-          df = dfGroups
-          if (mtype == "expenses") df = df[df$expense == 1,]
-          if (mtype == "income")   df = df[df$income  == 1,]
-          df
-      }
-      ,getCategories = function (expense = TRUE, group = 0) { 
-         active  = list(name = "active",  value = 1)
-         idGroup = list(name = "idGroup", value = group) 
-         if (group == 0) idGroup = NULL
-         field = list(name = "income", value = 1)
-         if (expense) field$name = "expense"
-         tblCategories$recordset(field, active, idGroup) 
-       }
+      # ,getGroups     = function (type = c("all", "expenses", "incomes")) { 
+      #     mtype = "all"
+      #     if (!missing(type)) mtype = match.arg(type)
+      #     df = dfGroups
+      #     if (mtype == "expenses") df = df[df$expense == 1,]
+      #     if (mtype == "income")   df = df[df$income  == 1,]
+      #     df
+      # }
+      # ,getCategories = function (expense = TRUE, group = 0) { 
+      #    active  = list(name = "active",  value = 1)
+      #    idGroup = list(name = "idGroup", value = group) 
+      #    if (group == 0) idGroup = NULL
+      #    field = list(name = "income", value = 1)
+      #    if (expense) field$name = "expense"
+      #    tblCategories$recordset(field, active, idGroup) 
+      #  }
       ,getMethods    = function (expenses = TRUE)          { 
          if ( expenses) df = tblMethods$table(expense = 1, active = 1) 
          if (!expenses) df = tblMethods$table(income  = 1, active = 1)
@@ -168,8 +168,8 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
       ,dfMov         = NULL
       ,dfMethods     = NULL
       ,tblMethods    = NULL
-      ,tblGroups     = NULL
-      ,tblCategories = NULL
+      # ,tblGroups     = NULL
+      # ,tblCategories = NULL
       ,tblMovements  = NULL
       ,tblParents    = NULL      
       ,tblTags       = NULL
@@ -178,13 +178,15 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
       ,addTags = function(mov, mtags) {
          tags = strsplit(mtags, "[,;]")
          tags = tags[[1]]
-         grp = dfGroups[dfGroups$id == mov$idGroup, "name"]
-         dfc = tblCategories$table(idGroup = mov$idGroup, id = mov$idCategory)
-         cat = dfc[1, "name"]
-         tags = c(grp, cat, tags)
+         # grp = dfGroups[dfGroups$id == mov$idGroup, "name"]
+         # dfc = tblCategories$table(idGroup = mov$idGroup, id = mov$idCategory)
+         # cat = dfc[1, "name"]
+         # tags = c(grp, cat, tags)
          tags = unique(tags)
-         for (idx in 1:length(tags)) {
-            tblTags$add(list(id = mov$id, seq = idx, tag = tags[idx]))
+         if (length(tags) > 0) {
+             for (idx in 1:length(tags)) {
+                  tblTags$add(list(id = mov$id, seq = idx, tag = tags[idx]))
+             }
          }
       }
       ,getMethodName = function (record) {

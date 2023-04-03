@@ -15,10 +15,11 @@ TBLCategories   = R6::R6Class("TBL.CATEGORIES"
                id      = "ID"  
               ,idGroup = "IDGROUP"
               ,name    = "NAME"     
-              ,descr   = "DESCR"   
+              ,descr   = "DESCR" 
+              ,since   = "SINCE"
+              ,until   = "UNTIL"
               ,income  = "INCOME"
               ,expense = "EXPENSE"
-              ,active  = "ACTIVE"   
               ,sync    = "SYNC"
          )
      )

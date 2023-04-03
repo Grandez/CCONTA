@@ -8,6 +8,7 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
    ,inherit    = OBJBase
    ,public = list(
        initialize = function(factory, ...) {
+          browser()
          super$initialize(factory, TRUE)
          private$tblGroups     = factory$getTable("Groups")
          private$tblCategories = factory$getTable("Categories")

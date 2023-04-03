@@ -21,6 +21,13 @@ WEBROOT = R6::R6Class("JGG.INFO.APP"
         self$factory$finalize()
         self$factory = NULL
      }
+     ,setYear    = function (year) {
+        self$year = year
+        invisible(self)
+     }
+     ,getYear    = function () {
+        self$year
+     }
      ,getPanel   = function (id, object = NULL, parent=NULL, session=getDefaultReactiveDomain(), ...) {
         private$args = list(...)
         super$getPanel(id,object,parent,session)

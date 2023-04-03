@@ -10,10 +10,11 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
          super$initialize(id, session, TRUE)
          private$objMovements = factory$getObject("Movements")
          # Los tipos son numeros secuenciales (1,2,3)
-         self$vars$types = rep(TRUE, max(unlist(CTES$TYPE)))
+         self$vars$types = rep(TRUE, max(unlist(CTES$MOVTYPE)))
 #         objMovements$loadMovements()
       }
      ,refreshData = function() {
+        browser()
         data = objMovements$getMovements()
         data = data[data$type %in% which(self$vars$types == TRUE),]
         data$month = lubridate::month(data$dateVal)

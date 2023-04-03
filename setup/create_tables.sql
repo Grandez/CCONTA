@@ -47,9 +47,10 @@ CREATE TABLE GROUPS  (
     ID        INT UNSIGNED NOT NULL 
    ,NAME      VARCHAR(255) NOT NULL -- Nombre del grupo
    ,DESCR     TEXT   
-   ,ACTIVE    TINYINT      DEFAULT 1      
-   ,EXPENSE   TINYINT      DEFAULT 1  COMMENT "Gastos"  
-   ,INCOME    TINYINT      DEFAULT 1  COMMENT "Ingresos"
+   ,EXPENSE   TINYINT      DEFAULT 1          COMMENT "Gastos"  
+   ,INCOME    TINYINT      DEFAULT 1          COMMENT "Ingresos"
+   ,SINCE     DATE         DEFAULT CURDATE()  COMMENT "Fecha de alta"
+   ,UNTIL     DATE                            COMMENT "Fecha de baja"
    ,SYNC      TINYINT      DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
    ,PRIMARY KEY (ID)                -- Primary key
    ,UNIQUE      (TYPE, NAME)         -- Avoid duplicate names
@@ -65,7 +66,8 @@ CREATE TABLE CATEGORIES  (
    ,DESCR     TEXT   
    ,EXPENSE   TINYINT       DEFAULT 1  COMMENT "Gastos"  
    ,INCOME    TINYINT       DEFAULT 1  COMMENT "Ingresos"   
-   ,ACTIVE    TINYINT       DEFAULT 1   
+   ,SINCE     DATE         DEFAULT CURDATE()  COMMENT "Fecha de alta"
+   ,UNTIL     DATE                            COMMENT "Fecha de baja"
    ,SYNC      TINYINT       DEFAULT 0  -- Indica si se ha sincronizado, editado, etc.   
    ,PRIMARY KEY (IDGROUP, ID)         -- Primary key
    ,UNIQUE      (IDGROUP, ID, NAME)   -- Avoid duplicate names

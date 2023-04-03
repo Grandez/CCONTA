@@ -9,7 +9,7 @@ PNLInput = R6::R6Class("CONTA.PNL.INPUT"
       expense = function(value) {
          if (missing(value)) return (.expense)
          private$.expense = value
-         obj$set(expense = ifelse(value, 1, 0))
+         objMov$set(expense = ifelse(value, 1, 0))
          invisible(self)
       }
    )  
@@ -18,23 +18,28 @@ PNLInput = R6::R6Class("CONTA.PNL.INPUT"
      ,itemized = FALSE
      ,initialize    = function(id, parent, session) {
          super$initialize(id, session, TRUE) 
-         private$obj = factory$getObject("Movements")
+         private$objMov    = factory$getObject("Movements")
+         private$objGroups = factory$getObject("Groups")
       }
-     ,getGroups     = function ()          { obj$getGroups     (ifelse(.expense, "expenses", "incomes")) }
-     ,getCategories = function (group = 0) { obj$getCategories (.expense, group)         }
-     ,getMethods    = function ()          { obj$getMethods    (.expense)                }
+     ,getGroups     = function ()          { 
+        objGroups$getGroupsByType(self$expense, self$vars$date)    
+      }
+     ,getCategories = function (group = 0) { 
+        objGroups$getCategoriesByType (group, .expense, self$vars$date) 
+      }
+     ,getMethods    = function ()          { objMov$getMethods    (.expense)                }
      ,getGroupName  = function (group)     {
-        df = obj$getGroups     (ifelse(.expense, "expenses", "incomes"))
+        df = objMov$getGroups     (ifelse(.expense, "expenses", "incomes"))
         df = df[df$id == group,]
         as.character(df[1,"name"])
      }
      ,getCategoryName  = function (group, category)     {
-        df = obj$getCategories (.expense, group)
+        df = objMov$getCategories (.expense, group)
         df = df[df$id == category,]
         as.character(df[1,"name"])
      }
      
-     ,add           = function (...)   { obj$add(...)  }
+     ,add           = function (...)   { objMov$add(...)  }
      ,itemize       = function ()      { 
         if (data$origin$pending > 0) {
             item = list( idGroup    = data$base$idGroup
@@ -44,18 +49,19 @@ PNLInput = R6::R6Class("CONTA.PNL.INPUT"
                         ,tags       = data$base$tags)
            data$items[[length(data$items) + 1]] = item
         }
-        obj$itemize(data$base, data$items) 
+        objMov$itemize(data$base, data$items) 
       } 
      ,set           = function ( ... ) {
-        obj$set(...)
+        objMov$set(...)
         invisible(self)
      }
-     # ,add        = function(...) { obj$add(...)    }
-     # ,loadBudget = function ()   { obj$getBudget() }
+     # ,add        = function(...) { objMov$add(...)    }
+     # ,loadBudget = function ()   { objMov$getBudget() }
    )
   ,private = list(
-      .expense = FALSE
-     ,obj      = NULL
+      .expense  = FALSE
+     ,objMov    = NULL
+     ,objGroups = NULL
    )
 )
 
@@ -66,6 +72,7 @@ moduleServer(id, function(input, output, session) {
    flags = reactiveValues(
        type    = FALSE
       ,itemize = FALSE
+      ,date    = FALSE  #Actualizacion de la fecha de valor
    ) 
 
    validate  = function() {
@@ -138,11 +145,21 @@ moduleServer(id, function(input, output, session) {
    ##################################################################
    
    observeEvent(flags$type, ignoreInit = TRUE, {
-      df = pnl$getMethods()
-      updateSelectInput(session, "cboMethods", choices = WEB$makeCombo(df))
+      pnl$expense = ifelse(input$swType, CTES$TYPE$Expenses, CTES$TYPE$Incomes)
+      # df = pnl$getMethods()
+      # updateSelectInput(session, "cboMethods", choices = WEB$makeCombo(df))
+      # df = pnl$getGroups()
+      # updateSelectInput(session, "cboGroups", choices = WEB$makeCombo(df))
+   })
+   observeEvent(flags$date, ignoreInit = TRUE, {
+      pnl$set(dateVal    = input$dtInput)
+      pnl$vars$date = input$dtInput
       df = pnl$getGroups()
       updateSelectInput(session, "cboGroups", choices = WEB$makeCombo(df))
+      df = pnl$getMethods()
+      updateSelectInput(session, "cboMethods", choices = WEB$makeCombo(df))
    })
+   
    observeEvent(flags$itemize, ignoreInit = TRUE, {
       pnl$itemized     = !pnl$itemized
       shinyjs::toggle("divItemize")
@@ -173,7 +190,6 @@ moduleServer(id, function(input, output, session) {
    ##################################################################
    
    observeEvent(input$swType,        {
-      pnl$expense = input$swType
       flags$type  = isolate(!flags$type)
    })
    observeEvent(input$cboGroups,     {
@@ -197,8 +213,8 @@ moduleServer(id, function(input, output, session) {
    observeEvent(input$cboMethods,    { pnl$set(idMethod   = as.integer(input$cboMethods))    })
    observeEvent(input$cboCategories, { pnl$set(idCategory = as.integer(input$cboCategories)) })
    observeEvent(input$cboType,       { pnl$set(type       = as.integer(input$cboType))       })
-   observeEvent(input$dtInput,       { pnl$set(dateOper   = input$dtInput)                   
-                                       pnl$set(dateVal    = input$dtInput)                   })
+#   observeEvent(input$dtInput,       { pnl$set(dateVal    = input$dtInput)                   })
+   observeEvent(input$dtInput,       { flags$date         = isolate(!flags$date)             })
    observeEvent(input$btnOK, {
       txtType = ifelse(pnl$expense, "Gasto", "Ingreso")
       if (validate()) return()
@@ -207,6 +223,7 @@ moduleServer(id, function(input, output, session) {
       mtype = as.integer(input$cboType)
       if (pnl$expense) mtype = mtype * -1
       if (!pnl$itemized) {
+         browser()
           id = pnl$add( dateOper = Sys.Date(),    dateVal = input$dtInput
                        ,amount   = input$impExpense
                        ,note     = input$txtNote,    tags   = input$txtTags)
