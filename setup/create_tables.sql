@@ -132,11 +132,26 @@ CREATE TABLE  MOVEMENTS  (
    ,ACTIVE     TINYINT        DEFAULT 1   
    ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.      
    ,PRIMARY KEY (ID)                 -- Primary key
-   ,INDEX       (DATEOPER, IDGROUP, IDCATEGORY)    -- Alternate Key
    ,INDEX       (DATEVAL, IDGROUP, IDCATEGORY)    -- Alternate Key
    ,INDEX       (SYNC)               -- For synch
    ,INDEX       (TYPE)
 );
+-- ------------------------------------------------
+-- Tabla de cierre contable
+-- El Mes 0 es el saldo de inicio para ese agno
+-- ------------------------------------------------
+DROP TABLE  IF EXISTS CLOSED CASCADE;
+CREATE TABLE  CLOSED  (
+    YEAR_CLOSE  SMALLINT    UNSIGNED NOT NULL           COMMENT 'Agno'
+   ,MONTH_CLOSE SMALLINT    UNSIGNED NOT NULL           COMMENT 'Mes'
+   ,IDGROUP    INT          UNSIGNED NOT NULL           COMMENT 'Grupo de gastos'
+   ,IDCATEGORY INT          UNSIGNED NOT NULL           COMMENT 'Categoria del gasto'
+   ,AMOUNT     DECIMAL(7,3)          NOT NULL           COMMENT 'Importe el gasto'
+   ,SYNC       TINYINT                         DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.      
+   ,PRIMARY KEY (YEAR_CLOSE, MONTH_CLOSE, IDGROUP, IDCATEGORY)                 -- Primary key
+   ,INDEX       (SYNC)               -- For synch
+);
+
 -- Same as movements
 DROP TABLE  IF EXISTS ITEMIZEDS CASCADE;
 CREATE TABLE  ITEMIZEDS  (

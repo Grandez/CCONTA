@@ -27,6 +27,9 @@ OBJGroups = R6::R6Class("JGG.OBJ.GROUPS"
          if (type == CTES$TYPE$Incomes)  df = df[df$income  == 1,]
          df
       }
+      ,getGroupByName = function (name) { 
+         dfGroups[dfGroups$lower == tolower(name),]
+      }
       ,getAllGroups  = function () {
          loadGroups()
       }
@@ -50,7 +53,34 @@ OBJGroups = R6::R6Class("JGG.OBJ.GROUPS"
                               lubridate::year(since) <= year & 
                               lubridate::year(until) >= year)
       }
-      
+      ,addGroup = function(...) {
+         data = JGGTools::args2list(...)
+         data$id = getNextId()
+         tblGroups$add(data, isolated=TRUE)
+         data$id
+      }
+      ,updateGroup = function(...) {
+         data = JGGTools::args2list(...)
+         tblGroups$select(id=data$id)
+         data$sync = 0
+         tblGroups$set(data)
+         tblGroups$apply(isolated = TRUE)
+         data$id
+      }
+      ,addCategory = function(...) {
+         data = JGGTools::args2list(...)
+         data$id = getNextId(data$idGroup)
+         tblCategories$add(data, isolated=TRUE)
+         data$id
+      }
+      ,updateCategory = function(...) {
+         data = JGGTools::args2list(...)
+         tblCategories$select(idGroup = data$idGroup, id=data$id)
+         data$sync = 0
+         tblCategories$set(data)
+         tblCategories$apply(isolated = TRUE)
+         data$id
+      }
    )
    ,private = list(
        tblGroups     = NULL
@@ -58,12 +88,21 @@ OBJGroups = R6::R6Class("JGG.OBJ.GROUPS"
       ,dfGroups      = NULL
       ,dfCategories  = NULL
       ,loadGroups      = function () { 
-          if (is.null(dfGroups)) private$dfGroups     = tblGroups$table()     
+          private$dfGroups       = tblGroups$table()     
+          private$dfGroups$lower = tolower(private$dfGroups$name)
           private$dfGroups
        }
       ,loadCategories  = function () { 
          if (is.null(dfCategories)) private$dfCategories = tblCategories$table() 
          private$dfCategories
-       }
+      }
+     ,getNextId = function (idGroup) {
+        if (missing(idGroup)) {
+           id = tblGroups$max("id")
+        } else {
+           id = tblCategories$max("id", idGroup = idGroup)
+        }   
+        id + 1
+     }      
    )
 )

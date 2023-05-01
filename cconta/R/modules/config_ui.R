@@ -6,10 +6,11 @@ modConfigInput <- function(id, title) {
     )
     main = tagList(
        fluidRow( column(1)
-                ,column(5, fluidRow(actionButton(ns("btnAddGroup"), "Nuevo grupo"), h3("Grupos"))
+                ,column(4, actionButton(ns("btnAddGroup"), "Nuevo grupo"), h3("Grupos")
                          , guiTable(ns("tblGroups")))
                 ,column(1)
-                ,column(5, actionButton(ns("btnAddCategory"), "Nueva categoria"), h3("Categorias"),guiTable(ns("tblCategories")))
+                ,column(4, shinyjs::disabled(actionButton(ns("btnAddCategory"), "Nueva categoria")), h3("Categorias")
+                         ,guiTable(ns("tblCategories")))
                )
     )
     list(left=left, main=main, right=NULL)

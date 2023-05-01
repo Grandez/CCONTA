@@ -5,21 +5,13 @@ PNLConfig = R6::R6Class("CONTA.PNL.CONFIG"
   ,cloneable  = FALSE
   ,lock_class = TRUE
   ,inherit    = PNLBase
-  ,active = list(
-      expense = function(value) {
-         if (missing(value)) return (.expense)
-         private$.expense = value
-         obj$set(type = ifelse(value, 1, -1))
-         invisible(self)
-      }
-   )  
   ,public     = list(
       initialize    = function(id, parent, session) {
          super$initialize(id, session, TRUE) 
-         private$tblGroups     = factory$getTable("Groups")
-         private$tblCategories = factory$getTable("Categories")
          self$vars$inactives = TRUE
          self$vars$type      = "all"
+         private$objGroups     = factory$getObject("Groups")
+         # private$tblCategories = factory$getTable("Categories")
          self$refresh()
       #   private$frmExpenses  = factory$getObject("FrameExpenses", force = TRUE)         
         #  private$obj = factory$getObject("Movements")
@@ -30,42 +22,57 @@ PNLConfig = R6::R6Class("CONTA.PNL.CONFIG"
 
       }
      ,refresh = function() {
-        private$dfGroups     = tblGroups$table()
-        private$dfCategories = tblCategories$table()
+        private$dfGroups     = objGroups$getAllGroups()
+#        private$dfCategories = tblCategories$table()
      }
      ,getGroups     = function () { 
-         applyFilters(dfGroups)     
+         self$data$dfGroups = applyFilters (dfGroups)
+         self$data$dfGroups
       }     
-     ,getCategories = function (idGroup) { 
-         applyFilters (dfCategories[dfCategories$idGroup == idGroup,])
-      }
-     # ,getTableExpenses = function (target) { 
-     #    browser()
-     #    frmExpenses$getReactable(target) }     
-     # ,getExpenses   = function () {
-     #    browser()
-     #    dfg = obj$getGroups("expenses")
-     #    dfg
-     # }
-
-     # ,getCategories = function (group = 0) { obj$getCategories (group)                   }
-     # ,getMethods    = function ()          { obj$getMethods    ()                        }
-     # ,add           = function (...)       { obj$add(...)                                }
-     # ,set           = function ( ... ) {
-     #    obj$set(...)
-     #    invisible(self)
-     # }
-     # ,add        = function(...) { obj$add(...)    }
-     # ,loadBudget = function ()   { obj$getBudget() }
+     ,getCategories = function (row) { 
+        self$data$dfCategories = objGroups$getCategories(self$data$dfGroups[row, "id"])
+        self$data$dfCategories
+     }
+     ,getGroup = function (id) {
+        as.list(private$dfGroups[private$dfGroups$id == id,])
+     }
+     ,getIdGroup = function (row) { self$data$dfGroups[row,"id"] }
+     
+     ,updateGroup = function () {
+        data = self$vars$data
+        if (data$edit) {
+           id = objGroups$updateGroup(data)
+        } else {
+           id = objGroups$addGroup(data)
+        }
+        id
+     }
+     ,updateCategory = function () {
+        data = self$vars$data
+        if (data$edit) {
+           id = objGroups$updateCategory(data)
+        } else {
+           id = objGroups$addCategory(data)
+        }
+        id
+     }
+     ,checkName = function (data) {
+        if (data$group) {
+           df = objGroups$getGroupByName(data$name)
+           if (nrow(df) > 0) return (TRUE)
+        }
+        FALSE
+     }
    )
   ,private = list(
       tblGroups     = NULL
      ,tblCategories = NULL
+     ,objGroups     = NULL
      ,dfGroups      = NULL
      ,dfCategories  = NULL
      ,applyFilters  = function (dfIn) {
          df = dfIn
-         if (!self$vars$inactives) df = dfIn[dfIn$active == 1,]
+#         if (!self$vars$inactives) df = dfIn[dfIn$active == 1,]
          if (self$vars$type == "expenses") return (df[df$expense == 1,])
          if (self$vars$type == "incomes")  return (df[df$income == 1,])
          df
@@ -75,48 +82,79 @@ PNLConfig = R6::R6Class("CONTA.PNL.CONFIG"
 
 moduleServer(id, function(input, output, session) {
    pnl = WEB$getPanel(id, PNLConfig, NULL, session)
-   
    jscode = function(idTable) {
-      data = paste("{ row: rowInfo.index + 1, colName: colInfo.id")
-      data = paste(data, ",detail: JSON.stringify(rowInfo.row)}")
-      evt = paste0("Shiny.setInputValue('", idTable, "',", data, ",{ priority: 'event' });")
+     if (is.null(idTable)) return (NULL)
+     data = paste("{ row: rowInfo.index + 1, col: colInfo.index + 1, colName: colInfo.id")
+     data = paste(data, ",detail: JSON.stringify(rowInfo.row)}")
+     evt = paste0("Shiny.setInputValue('", idTable, "',", data, ",{ priority: 'event' });")
 
-      js_code = "function(rowInfo, colInfo) {"
-      js_code = paste(js_code, evt, sep="\n")
-      js_code = paste(js_code, "}", sep="\n")
-      htmlwidgets::JS(js_code)
+     js_code = "function(rowInfo, colInfo) {"
+     js_code = paste(js_code, evt, sep="\n")
+     js_code = paste(js_code, "}", sep="\n")
+     htmlwidgets::JS(js_code)
    }
-   iconType = function (value) {
-      if (value == 0) shiny::icon("times", style = "color: red")
-      else            shiny::icon("check", style = "color: green")
+
+   validateForm = function (data) {
+      if (nchar(trimws(data$name)) == 0)         return ("Nombre no puede estar vacio")
+      if (data$income == 0 && data$expense == 0) return ("Se debe indicar si acepta gastos y/o ingresos")
+      if (data$since >= data$until)              return ("Fechas de validez incorrectas o ilogicas") 
+      if (data$edit && data$name != data$oldName) {
+         if (pnl$checkName(data))     return ("El nombre ya existe")  
+      } 
+      if (!data$edit && pnl$checkName(data))     return ("El nombre ya existe")     
+
+      NULL
    }
-   iconEdit = function (value) {
-      shiny::icon("pencil", style = "color: blue")
-   }
-   rowInactive = function (index) {
-      if (pnl$data$df[index, "active"] == 0) {
-          list(background = "lightGrey", fontStyle = "italic")
-      }
-   }
-   makeReactable = function (df, categories = FALSE) {
-#      browser()
-      target = ifelse(categories, "tblCategories", "tblGroups")
-      onClick = jscode(ns(target))
+   renderGroups = function (uiTable) {
+      df = pnl$getGroups()
       df$edit = 0
-      outlined = ifelse(categories, TRUE, FALSE)
-      subTable = function (index) {
-            dfc = pnl$getCategories(df[index, "id"])
-            htmltools::div(style = "padding: 1rem", makeReactable(dfc, TRUE)) #reactable(dfc, outlined = TRUE))
-      }
-
-      if (categories) subTable = NULL
-      
       cols = list(
          id=colDef(show=FALSE)
-        ,active=colDef(show=FALSE)
         ,sync=colDef(show=FALSE)
+        ,since = colDef (show = FALSE)
+        ,until = colDef (show = FALSE)    
+        ,lower = colDef (show = FALSE)       
         ,name=colDef(name="Nombre")
-        ,descr=colDef(name="Descripcion")
+        ,desc=colDef(name="Descripcion")
+        ,income = colDef( name="Ingreso", width = 75, align = "center"
+                         ,cell = function(value) {
+                             if (value == 0) shiny::icon("times", style = "color: red")
+                             else            shiny::icon("check", style = "color: green")
+                         })
+        ,expense = colDef( name="Gasto", width = 75, align = "center"
+                          ,cell = function(value) {
+                              if (value == 0) shiny::icon("times", style = "color: red")
+                              else            shiny::icon("check", style = "color: green")
+                           })
+        ,edit = colDef( name = "", width = 50 # name=shiny::icon("plus", style = "color: blue")
+                       ,cell=function(value) {
+                             if (value==0) shiny::icon("pencil", style = "color: blue")
+                        })
+     )
+      rowSel = NULL
+      if (!is.null(pnl$vars$rowGroup)) rowSel = pnl$vars$rowGroup
+      obj = reactable::reactable(df, columns = cols
+                             ,pagination = FALSE, wrap = FALSE
+                             ,selection = "single"
+                             ,defaultSelected = rowSel
+                             ,highlight = TRUE
+                             ,striped = TRUE
+                             ,onClick=jscode(uiTable)
+         )
+
+     output$tblGroups = reactable::renderReactable(obj)      
+   }
+   renderCategories = function (uiTable, row) {
+      df = pnl$getCategories(row)
+      df$edit = 0
+      cols = list(
+         id      = colDef(show=FALSE)
+        ,idGroup = colDef(show = FALSE)   
+        ,sync=colDef(show=FALSE)
+        ,since = colDef (show = FALSE)
+        ,until = colDef (show = FALSE)    
+        ,name=colDef(name="Nombre")
+        ,desc=colDef(name="Descripcion")
         ,income = colDef(name="Ingreso", cell = function(value) {
                         if (value == 0) shiny::icon("times", style = "color: red")
                         else            shiny::icon("check", style = "color: green")
@@ -129,148 +167,122 @@ moduleServer(id, function(input, output, session) {
                        ,cell=function(value) {
                              if (value==0) shiny::icon("pencil", style = "color: blue")
                         })
-     )      
-   
-     if (categories) cols$idGroup = colDef(show = FALSE)   
-     reactable(df, columns=cols, pagination = FALSE, onClick=onClick, highlight = TRUE
-                 , rowStyle = function(index) {
-                      if (df[index, "active"] == 0) {
-                          list(background = "lightGrey", fontStyle = "italic")
-                      } 
-                 }
-                 ,outlined = outlined
-                 ,details = subTable
-# ,details = function (index) {
-#    dfc = pnl$getCategories(dfg[index, "id"])
-#      htmltools::div(style = "padding: 1rem",
-#     reactable(dfc, outlined = TRUE)
-#   )
-
-#}   
-   )
-      
-   }
-   updateTableCategories = function (data) {
-      info = jsonlite::fromJSON(data)
-      pnl$data$df = pnl$getCategories(info$id)
-      pnl$data$df$edit = 0
-      cols = list( id=colDef(show=FALSE), idGroup=colDef(show = FALSE)
-                  ,name=colDef(name="Nombre")
-                  ,descr=colDef(name="Descripcion")
-                  ,income = colDef(name="Ingreso", cell = function(value) iconType(value))
-                  ,expense = colDef(name="Gasto",  cell = function(value) iconType(value))
-                  ,edit = colDef(name="", cell=function(value) iconEdit(value))
-            )      
-     
-     obj = reactable( pnl$data$df
-                     ,columns=cols
-                     ,pagination = FALSE
-                     ,onClick=jscode(ns("tblCategories"))
-                     ,rowStyle = function(index) rowInactive(index)
      )
-     output$tblCategories = renderReactable(obj)
       
+      obj = reactable::reactable(df, columns = cols
+                             , pagination = FALSE, wrap = FALSE
+                             , onClick=jscode(uiTable)
+         )
+      
+     output$tblCategories = reactable::renderReactable(obj)
    }
-   refresh = function () {
-#      browser()
-      dfg = pnl$getGroups()
-#      dfg$edit = 0
-#       browser()
-# browser()
-# cols = list(
-#    id=colDef(show=FALSE)
-#    ,name=colDef(name="Nombre")
-#    ,descr=colDef(name="Descripcion")
-#    ,income = colDef(name="Ingreso", cell = function(value){
-#       if (value == 0) shiny::icon("times", style = "color: red")
-#       else            shiny::icon("check", style = "color: green")
-#    })
-#    ,expense = colDef(name="Gasto", cell = function(value){
-#       if (value == 0) shiny::icon("times", style = "color: red")
-#       else            shiny::icon("check", style = "color: green")
-#    })
-#    ,edit = colDef(name="", cell=function(value) {if (value==0) shiny::icon("pencil", style = "color: blue")})
-# 
-# )      
-# reactable(iris,searchable = TRUE,sortable = TRUE,pagination=FALSE,bordered =TRUE,highlight = TRUE,showSortIcon = TRUE,
-#                    columns= list(Petal.Width = colDef(name =  'Petal.Width', align = 'center',
-#                 cell = function(value) {
-#                   if (value  < 0.2 )  shiny::icon("warning", class = "fas",  
-#                     style = "color: orange") else value
-#                     }
-#                    )))
+   formItem = function(data, message = NULL) {
+      chkIncome  = ifelse(data$income  == 0, FALSE, TRUE)
+      chkExpense = ifelse(data$expense == 0, FALSE, TRUE)
+      title = ifelse(data$edit, "Modificacion de ", "Nuevo ")
+      title = paste(title, ifelse(data$group, "grupo", "categoria"))
 
-# 
-# obj = reactable(
-#   iris[1:5, ],
-#   columns = list(
-#     Sepal.Length = colDef(name = "Sepal Length"),
-#     Sepal.Width = colDef(name = "Sepal Width"),
-#     Species = colDef(align = "center")
-#   )
-# )
-#output$table = renderReactable(obj)
-#output$tblGroups = renderReactable(reactable(dfg))
-#onClick = jscode(ns("tblGroups"))
-output$tblGroups = renderReactable(makeReactable(dfg,FALSE))
-# output$tblGroups = renderReactable(reactable(dfg, columns=cols, pagination = FALSE, onClick=onClick,
-# rowStyle = function(index) {
-#     if (dfg[index, "active"] == 0) {
-#       list(background = "lightGrey", fontStyle = "italic")
-#     }
-# }
-# ,details = function (index) {
-#    dfc = pnl$getCategories(dfg[index, "id"])
-#      htmltools::div(style = "padding: 1rem",
-#     reactable(dfc, outlined = TRUE)
-#   )
-# 
-# }   
-#    ))
-# #output$tblCategories = renderReactable(obj)
-# }
-
-#       output$tblExpenses  = renderReactable({ reactable::reactable(dfg)   })
-#             output$tblExpenses = renderReactable({ pnl$getTableExpenses(ns("tblExpenses")) })
-#    } 
-      #    ,getReactable = function (idTable) {
-      #     cols = lapply(1:12, function(x) colDef(name=monthLong[x], aggregate = "sum"))
-      #     names(cols) = as.character(seq(1,12))
-      #     cols[["idGroup"]]    = colDef(show = FALSE)
-      #     cols[["idCategory"]] = colDef(show = FALSE)
-      #     cols[["Group"]]      = colDef(name = "Grupo",     width = 150)
-      #     cols[["Category"]]   = colDef(name = "Categoria", width = 200)
-      #     if ("row" %in% colnames(dfData)) cols[["row"]] = colDef(show = FALSE)
-      #    
-      #     reactable(private$dfData, groupBy = "Group", columns = cols) # , onClick = jscode(idTable) )
-      # }
-}
+      modalDialog(
+         tags$table(
+             tags$tr( tags$td(strong("Nombre"))
+                     ,tags$td(textInput(ns("frmTxtName"),label=NULL,value=data$name)))
+            ,tags$tr( tags$td(strong("Descripcion"))
+                     ,tags$td(textInput(ns("frmTxtDesc"),label=NULL,value=data$desc)))
+            ,tags$tr( tags$td(strong("Desde"))
+                     ,tags$td(guiDateInput(ns("frmCboFrom"), value=data$since)))
+            ,tags$tr( tags$td(strong("Hasta"))
+                     ,tags$td(guiDateInput(ns("frmCboTo"), value=data$until)))
+            ,tags$tr( tags$td(strong("Ingresos"))
+                     ,tags$td(guiCheckbox(ns("frmChkIncome"),  value = chkIncome, color="success")))
+            ,tags$tr( tags$td(strong("Gastos"))
+                     ,tags$td(guiCheckbox(ns("frmChkExpense"), value = chkExpense, color="danger")))
+         )
+        ,if (!is.null(message)) div(tags$b(message, style = "color: red;"))
+        ,title = title
+        ,footer = tagList(
+                modalButton("Cancel"),
+                actionButton(ns("btnFrmOK"), "OK")
+             )
+        ,easyClose = TRUE   
+         )
+   }  
+   formAdd = function(group) {   
+      if (!group) pnl$vars$data$idGroup = pnl$getIdGroup(pnl$vars$rowGroup)
+      pnl$vars$data$group = group
+      pnl$vars$data$edit  = FALSE
+      pnl$vars$data$since = Sys.Date()
+      pnl$vars$data$until = as.Date("2999/12/31")
+      pnl$vars$data$income  = 0
+      pnl$vars$data$expense = 1
+      showModal(formItem(pnl$vars$data))
+   }
+      
+   refresh = function(all=FALSE) {
+      if (all) pnl$refresh()
+      # Actualizar grupos o categorias segun corresponda
+      renderGroups(ns("tblGroups"))
+   }   
    flags = reactiveValues(
        type    = FALSE
       ,itemize = FALSE
    ) 
 
+   observeEvent(input$btnAddGroup,    { formAdd(TRUE)  })
+   observeEvent(input$btnAddCategory, { formAdd(FALSE) })
    observeEvent(input$tblGroups, {
-      if (input$tblGroups$colName == "edit") {
-         return
-      }
-      updateTableCategories(input$tblGroups$detail)
+      if (input$tblGroups$colName != "edit") return()
+      pnl$vars$row = jsonlite::fromJSON(input$tblGroups$detail)
+      pnl$vars$data = pnl$getGroup(pnl$vars$row$id)
+      pnl$vars$data$oldName = pnl$vars$data$name
+      pnl$vars$data$idGroup = pnl$vars$data$id
+      pnl$vars$data$edit = TRUE
+      pnl$vars$data$group = TRUE
+      showModal(formItem(pnl$vars$data))
    })
-   
-   # Filtros
-   observeEvent(input$cboType, {
-      pnl$vars$type = input$cboType
-      if (pnl$loaded) refresh()
-   }, ignoreInit = TRUE, ignoreNULL = TRUE)
-   observeEvent(input$swActive, {
-      pnl$vars$inactives = input$swActive
-      if (pnl$loaded) refresh()
+   observeEvent(input$tblCategories, {
+      if (input$tblCategories$colName != "edit") return()
+      browser()
+      pnl$vars$data = jsonlite::fromJSON(input$tblCategories$detail)
+      pnl$vars$data$oldName = pnl$vars$data$name
+      pnl$vars$data$idCAtegory = pnl$vars$data$id
+      pnl$vars$data$edit = TRUE
+      pnl$vars$data$group = FALSE
+      pnl$vars$data$idGroup = pnl$getIdGroup(pnl$vars$rowGroup)
+      showModal(formItem(pnl$vars$data))
+   })   
+   observeEvent(input$tblGroups__reactable__selected, {
+      row = getReactableState("tblGroups", "selected")
+      if (is.null(row)) return()
+      shinyjs::enable("btnAddCategory")
+      pnl$vars$rowGroup = row
+      renderCategories(ns("tblCategories"), row)
+   })
+
+   observeEvent(input$btnFrmOK, {
+      pnl$vars$data$name    = input$frmTxtName
+      pnl$vars$data$desc    = input$frmTxtDesc
+      pnl$vars$data$since   = input$frmCboFrom
+      pnl$vars$data$until   = input$frmCboTo
+      pnl$vars$data$income  = ifelse(input$frmChkIncome,  1, 0)
+      pnl$vars$data$expense = ifelse(input$frmChkExpense, 1, 0)
+      msg = validateForm(pnl$vars$data)
+
+      if (!is.null(msg)) {
+         showModal(formItem(pnl$vars$data, msg))
+         return()
+      }
+      if (pnl$vars$data$group) {
+          pnl$updateGroup()   
+      } else {
+         pnl$updateCategory()   
+      }
+      refresh(TRUE)
+      removeModal()      
    })
    
    if (!pnl$loaded) {
       pnl$loaded = TRUE
       refresh()
    }
-   
 })
 }

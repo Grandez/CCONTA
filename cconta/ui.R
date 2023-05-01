@@ -15,8 +15,8 @@ tagList(shinyjs::useShinyjs()
    # ,JGGTab(id="expected",   "Prevision",      NULL, JGGUI("expected"))   
    # ,JGGTab(id="detail",     "Detalle",        NULL, JGGUI("detail"))
    # 
-   # ,JGGTab(id="xfer",     "Transferencias", NULL, JGGUI("xfer"))
-   # ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))
+    ,JGGTab(id="xfer",     "Transferencias", NULL, JGGUI("xfer"))
+    ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))
 #   ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))
 
    # ,navbarMenu("Entrada"
