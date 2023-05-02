@@ -11,19 +11,10 @@ PNLConfig = R6::R6Class("CONTA.PNL.CONFIG"
          self$vars$inactives = TRUE
          self$vars$type      = "all"
          private$objGroups     = factory$getObject("Groups")
-         # private$tblCategories = factory$getTable("Categories")
          self$refresh()
-      #   private$frmExpenses  = factory$getObject("FrameExpenses", force = TRUE)         
-        #  private$obj = factory$getObject("Movements")
-
-        #           private$objMovements = factory$getObject("Movements")
-        #                         data = objMovements$getExpenses()
-        # frmExpenses$set(data, dateValue = byDateValue)
-
       }
      ,refresh = function() {
         private$dfGroups     = objGroups$getAllGroups()
-#        private$dfCategories = tblCategories$table()
      }
      ,getGroups     = function () { 
          self$data$dfGroups = applyFilters (dfGroups)
@@ -105,8 +96,7 @@ moduleServer(id, function(input, output, session) {
 
       NULL
    }
-   renderGroups = function (uiTable) {
-      df = pnl$getGroups()
+   renderTable = function(category, df, uiTable) {
       df$edit = 0
       cols = list(
          id=colDef(show=FALSE)
@@ -131,50 +121,30 @@ moduleServer(id, function(input, output, session) {
                              if (value==0) shiny::icon("pencil", style = "color: blue")
                         })
      )
-      rowSel = NULL
-      if (!is.null(pnl$vars$rowGroup)) rowSel = pnl$vars$rowGroup
-      obj = reactable::reactable(df, columns = cols
-                             ,pagination = FALSE, wrap = FALSE
-                             ,selection = "single"
-                             ,defaultSelected = rowSel
-                             ,highlight = TRUE
-                             ,striped = TRUE
-                             ,onClick=jscode(uiTable)
-         )
+     parms = list(data=df, columns = cols
+                                    ,pagination = FALSE, wrap = FALSE
+                                    ,highlight = TRUE
+                                    ,striped = TRUE
+                                    ,onClick=jscode(uiTable))
 
-     output$tblGroups = reactable::renderReactable(obj)      
+     if (category) {
+         cols$idGroup = colDef(show = FALSE)   
+     } else {
+         rowSel = NULL
+         if (!is.null(pnl$vars$rowGroup)) rowSel = pnl$vars$rowGroup
+         parms$selection = "single"
+         parms$defaultSelected = rowSel
+     }
+     
+     do.call("reactable", parms)
+   }
+   renderGroups = function (uiTable) {
+      obj = renderTable(FALSE, pnl$getGroups(), uiTable)
+      output$tblGroups = reactable::renderReactable(obj)      
    }
    renderCategories = function (uiTable, row) {
-      df = pnl$getCategories(row)
-      df$edit = 0
-      cols = list(
-         id      = colDef(show=FALSE)
-        ,idGroup = colDef(show = FALSE)   
-        ,sync=colDef(show=FALSE)
-        ,since = colDef (show = FALSE)
-        ,until = colDef (show = FALSE)    
-        ,name=colDef(name="Nombre")
-        ,desc=colDef(name="Descripcion")
-        ,income = colDef(name="Ingreso", cell = function(value) {
-                        if (value == 0) shiny::icon("times", style = "color: red")
-                        else            shiny::icon("check", style = "color: green")
-                       })
-        ,expense = colDef(name="Gasto", cell = function(value) {
-                          if (value == 0) shiny::icon("times", style = "color: red")
-                          else            shiny::icon("check", style = "color: green")
-                         })
-        ,edit = colDef( name = "+" # name=shiny::icon("plus", style = "color: blue")
-                       ,cell=function(value) {
-                             if (value==0) shiny::icon("pencil", style = "color: blue")
-                        })
-     )
-      
-      obj = reactable::reactable(df, columns = cols
-                             , pagination = FALSE, wrap = FALSE
-                             , onClick=jscode(uiTable)
-         )
-      
-     output$tblCategories = reactable::renderReactable(obj)
+      obj = renderTable(TRUE, pnl$getCategories(row), uiTable)
+      output$tblCategories = reactable::renderReactable(obj)      
    }
    formItem = function(data, message = NULL) {
       chkIncome  = ifelse(data$income  == 0, FALSE, TRUE)
@@ -217,10 +187,18 @@ moduleServer(id, function(input, output, session) {
       showModal(formItem(pnl$vars$data))
    }
       
-   refresh = function(all=FALSE) {
-      if (all) pnl$refresh()
-      # Actualizar grupos o categorias segun corresponda
-      renderGroups(ns("tblGroups"))
+   refresh = function(changedGroup) {
+      if (missing(changedGroup)) {
+         changedGroup = TRUE
+      } else {
+         pnl$refresh()
+      }
+         
+      if (changedGroup) {
+         renderGroups(ns("tblGroups"))
+      } else {
+         renderCategories(ns("tblCategories"), pnl$vars$rowGroup)
+      }
    }   
    flags = reactiveValues(
        type    = FALSE
@@ -241,7 +219,6 @@ moduleServer(id, function(input, output, session) {
    })
    observeEvent(input$tblCategories, {
       if (input$tblCategories$colName != "edit") return()
-      browser()
       pnl$vars$data = jsonlite::fromJSON(input$tblCategories$detail)
       pnl$vars$data$oldName = pnl$vars$data$name
       pnl$vars$data$idCAtegory = pnl$vars$data$id
@@ -276,7 +253,7 @@ moduleServer(id, function(input, output, session) {
       } else {
          pnl$updateCategory()   
       }
-      refresh(TRUE)
+      refresh(pnl$vars$data$group)
       removeModal()      
    })
    

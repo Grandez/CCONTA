@@ -93,7 +93,8 @@ OBJGroups = R6::R6Class("JGG.OBJ.GROUPS"
           private$dfGroups
        }
       ,loadCategories  = function () { 
-         if (is.null(dfCategories)) private$dfCategories = tblCategories$table() 
+         private$dfCategories = tblCategories$table() 
+         private$dfCategories$lower = tolower(private$dfCategories$name)
          private$dfCategories
       }
      ,getNextId = function (idGroup) {
