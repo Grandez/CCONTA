@@ -70,9 +70,9 @@ OBJGroups = R6::R6Class("JGG.OBJ.GROUPS"
          }
          df
       }
-      ,getCategory = function (idGroup, idCategory) {
+      ,getCategory = function (group, category) {
          loadCategories()
-         as.list(dfCategories %>% filter(idGroup == idGroup & id == idCategory))
+         as.list(dfCategories %>% filter(idGroup == group & id == category))
       }
       ,addGroup = function(...) {
          data = JGGTools::args2list(...)
