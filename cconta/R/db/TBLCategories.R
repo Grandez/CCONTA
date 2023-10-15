@@ -12,15 +12,16 @@ TBLCategories   = R6::R6Class("TBL.CATEGORIES"
            tblName = "CATEGORIES"
           ,key = c("id")
           ,fields = list(
-               id      = "ID"  
-              ,idGroup = "IDGROUP"
-              ,name    = "NAME"     
-              ,desc    = "DESCR" 
-              ,since   = "SINCE"
-              ,until   = "UNTIL"
-              ,income  = "INCOME"
-              ,expense = "EXPENSE"
-              ,sync    = "SYNC"
+               id       = "ID"  
+              ,idGroup  = "IDGROUP"
+              ,name     = "NAME"     
+              ,desc     = "DESCR" 
+              ,since    = "SINCE"
+              ,until    = "UNTIL"
+              ,income   = "INCOME"
+              ,expense  = "EXPENSE"
+              ,sync     = "SYNC"
+              ,variable = "VARIABLE"
          )
      )
 )

@@ -20,11 +20,11 @@ PNLStatusBase = R6::R6Class("CONTA.PNL.STATUS.BASE"
          private$objPage      = factory$getObject("PageTables")
       }
      ,refreshData = function () {
-        message("refreshData")
         data = objMovements$getMovements()
         data = data[data$type %in% which(self$vars$types == TRUE),]
         data$month = lubridate::month(data$dateVal)
         df = data[,c("idGroup", "idCategory", "month", "expense", "amount")]
+        browser()
         objPage$setData(df)
      }
      ,getExpenses      = function (target) { objPage$getExpenses(target) }

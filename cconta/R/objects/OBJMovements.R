@@ -39,9 +39,17 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          )
          private$dfMov = df[,!(names(df) %in% c("active", "sync"))]
       }
-      ,getMovements = function () {
-         private$dfMov
+      ,getMovements = function (expense) {
+         if (missing(expense)) return (private$dfMov)
+         dfMov %>% dplyr::filter(expense == expense)
       }
+      ,getMovementsByPeriod = function (month, expense) {
+         df = dfMov
+         if (month > 0) df = dfMov %>% dplyr::filter(month(dateVal) == month)
+         if (missing(expense)) return (df)
+         df %>% dplyr::filter(expense == expense)
+      }
+      
       # ,getGroups     = function (type = c("all", "expenses", "incomes")) { 
       #     mtype = "all"
       #     if (!missing(type)) mtype = match.arg(type)

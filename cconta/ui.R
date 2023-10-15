@@ -16,6 +16,7 @@ tagList(shinyjs::useShinyjs()
    # ,JGGTab(id="detail",     "Detalle",        NULL, JGGUI("detail"))
    # 
     ,JGGTab(id="xfer",     "Transferencias", NULL, JGGUI("xfer"))
+   ,JGGTab(id="export",     "Exportar", NULL, JGGUI("export"))
     ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))
 #   ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))
 

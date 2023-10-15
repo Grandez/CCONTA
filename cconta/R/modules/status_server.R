@@ -11,15 +11,23 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
          private$objMovements = factory$getObject("Movements")
          # Los tipos son numeros secuenciales (1,2,3)
          self$vars$types = rep(TRUE, max(unlist(CTES$MOVTYPE)))
-#         objMovements$loadMovements()
+         self$data$period = 0
+         self$data$variable = 3 # 1 - fijo, 2 - variable, 3 - todos
       }
      ,refreshData = function() {
-        browser()
-        data = objMovements$getMovements()
-        data = data[data$type %in% which(self$vars$types == TRUE),]
-        data$month = lubridate::month(data$dateVal)
-        df = data[,c("idGroup", "idCategory", "month", "expense", "amount")]
-        objPage$setData(df)
+        df = objMovements$getMovementsByPeriod(self$data$period)
+        df = df[df$type %in% which(self$vars$types == TRUE),]
+        if (data$period == 0) {
+            df$period = lubridate::month(df$dateVal)   
+        } else {
+            df$period = lubridate::day(df$dateVal)   
+        }
+        if (data$variable != 3) { # Solo fios o variables
+           fixed = ifelse(data$variable == 1, 0, -1)
+           df = df[df$variable == fixed,]
+        }
+        df = df[,c("idGroup", "idCategory", "period", "expense", "amount")]
+        objPage$setData(df, self$data$period)
      }
    )
   ,private = list(
@@ -46,15 +54,23 @@ moduleServer(id, function(input, output, session) {
       fig      
    }
    refresh = function () {
-      message("refresh")
+      browser()
       pnl$refreshData()
       output$tblExpenses = updTable({ pnl$getExpenses(ns("tblExpenses")) })
       output$tblIncomes  = updTable({ pnl$getIncomes(ns("tblIncomes")) })
       output$tblSummary  = updTable({ pnl$getSummary() })
 #      output$plot        = renderPlotly   ({ makePlot()  })
    }
+   observeEvent(input$cboPeriod, { 
+      pnl$data$period = as.integer(input$cboPeriod) 
+      refresh()
+   }, ignoreInit = TRUE)
+   observeEvent(input$chkCategory, {
+      browser()
+      pnl$data$variable = sum(as.integer(input$chkCategory))
+      refresh()
+   }, ignoreInit = TRUE)
    observeEvent(input$swExpected, {
-              message("swExpected")
       pnl$vars$types[CTES$TYPE$Expected] = input$swExpected
       refresh()
    }, ignoreInit = TRUE)

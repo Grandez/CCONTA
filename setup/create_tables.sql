@@ -64,8 +64,9 @@ CREATE TABLE CATEGORIES  (
    ,ID        INT UNSIGNED  NOT NULL   -- ID Cuenta Cuenta: IInnnmmm - II Origen / nnn grupo / mmm Cuenta    
    ,NAME      VARCHAR(255)  NOT NULL   -- Nombre de la cuenta
    ,DESCR     TEXT   
-   ,EXPENSE   TINYINT       DEFAULT 1  COMMENT "Gastos"  
-   ,INCOME    TINYINT       DEFAULT 1  COMMENT "Ingresos"   
+   ,EXPENSE   TINYINT       DEFAULT  1  COMMENT "Gastos"  
+   ,INCOME    TINYINT       DEFAULT  1  COMMENT "Ingresos"   
+   ,VARIABLE  TINYINT       DEFAULT -1  COMMENT "Categoria de mov. fijo o variable"   
    ,SINCE     DATE         DEFAULT CURDATE()  COMMENT "Fecha de alta"
    ,UNTIL     DATE                            COMMENT "Fecha de baja"
    ,SYNC      TINYINT       DEFAULT 0  -- Indica si se ha sincronizado, editado, etc.   
@@ -128,6 +129,7 @@ CREATE TABLE  MOVEMENTS  (
    ,NOTE       VARCHAR(255)          -- Comentarios
    ,EXPENSE    TINYINT        DEFAULT -1         COMMENT 'Es un gasto (-1) o un ingreso (1)'
    ,TYPE       TINYINT        DEFAULT  1         COMMENT 'Tipo de gasto segun codigo'
+   ,VARIABLE   TINYINT        DEFAULT -1         COMMENT 'Flag gasto fijo o variable'
    ,PARENT     INT  UNSIGNED                     COMMENT 'Si es un gasto desglosado, id del padre'   
    ,ACTIVE     TINYINT        DEFAULT 1   
    ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.      

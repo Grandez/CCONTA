@@ -24,7 +24,7 @@ PNLInput = R6::R6Class("CONTA.PNL.INPUT"
      ,getGroups     = function ()          { 
         objGroups$getGroupsByType(self$expense, self$vars$date)    
       }
-     ,getCategories = function (group = 0) { 
+     ,getCategoriesByGroup = function (group = 0) { 
         objGroups$getCategoriesByType (group, .expense, self$vars$date) 
       }
      ,getMethods    = function ()          { objMov$getMethods    (.expense)                }
@@ -53,7 +53,13 @@ PNLInput = R6::R6Class("CONTA.PNL.INPUT"
       } 
      ,set           = function ( ... ) {
         objMov$set(...)
+        self$data = jgg_list_merge(self$data, list(...))
         invisible(self)
+     }
+     ,setCategory = function (idCategory) {
+        set(idCategory = idCategory)
+        item = objGroups$getCategory(data$idGroup, idCategory)
+        set(variable = item$variable)
      }
      # ,add        = function(...) { objMov$add(...)    }
      # ,loadBudget = function ()   { objMov$getBudget() }
@@ -66,7 +72,6 @@ PNLInput = R6::R6Class("CONTA.PNL.INPUT"
 )
 
 moduleServer(id, function(input, output, session) {
-
    pnl = WEB$getPanel(id, PNLInput, NULL, session)
 
    flags = reactiveValues(
@@ -124,7 +129,6 @@ moduleServer(id, function(input, output, session) {
       clearForm(pnl$data$origin$pending)      
    }
    updateItemization = function (item) {
-      
       output$lblTotal   =  updLabelNumber(pnl$data$origin$total)
       output$lblCurrent =  updLabelNumber(pnl$data$origin$current)
       output$lblPending =  updLabelNumber(pnl$data$origin$pending)
@@ -196,7 +200,7 @@ moduleServer(id, function(input, output, session) {
       if (input$cboGroups == 0) return()
       group = as.integer(input$cboGroups)
       pnl$set(idGroup = group)
-      df = pnl$getCategories(group)
+      df = pnl$getCategoriesByGroup(group)
       updateSelectInput(session, "cboCategories", choices = WEB$makeCombo(df))
    })
    observeEvent(input$impExpense,    { 
@@ -210,22 +214,21 @@ moduleServer(id, function(input, output, session) {
       shinyjs::show("btnItemize")
    })
    
-   observeEvent(input$cboMethods,    { pnl$set(idMethod   = as.integer(input$cboMethods))    })
-   observeEvent(input$cboCategories, { pnl$set(idCategory = as.integer(input$cboCategories)) })
-   observeEvent(input$cboType,       { pnl$set(type       = as.integer(input$cboType))       })
-#   observeEvent(input$dtInput,       { pnl$set(dateVal    = input$dtInput)                   })
-   observeEvent(input$dtInput,       { flags$date         = isolate(!flags$date)             })
+   observeEvent(input$cboMethods,    { pnl$set(idMethod   = as.integer(input$cboMethods))  })
+   observeEvent(input$cboCategories, { pnl$setCategory(as.integer(input$cboCategories))    }, ignoreInit = TRUE)
+   observeEvent(input$cboType,       { pnl$set(type       = as.integer(input$cboType))     })
+#   observeEvent(input$dtInput,       { pnl$set(dateVal    = input$dtInput)                })
+   observeEvent(input$dtInput,       { flags$date         = isolate(!flags$date)           })
    observeEvent(input$btnOK, {
       txtType = ifelse(pnl$expense, "Gasto", "Ingreso")
       if (validate()) return()
-      
+
       output$txtMessage = renderText({""})
       mtype = as.integer(input$cboType)
       if (pnl$expense) mtype = mtype * -1
       if (!pnl$itemized) {
-         browser()
-          id = pnl$add( dateOper = Sys.Date(),    dateVal = input$dtInput
-                       ,amount   = input$impExpense
+          id = pnl$add( dateOper = Sys.Date(),       dateVal = input$dtInput
+                       ,amount   = input$impExpense, expense = mtype
                        ,note     = input$txtNote,    tags   = input$txtTags)
           if (id > 0) {
               clearForm()

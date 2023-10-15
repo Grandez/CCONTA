@@ -64,8 +64,9 @@ CREATE TABLE CATEGORIES  (
    ,ID        INT UNSIGNED  NOT NULL   -- ID Cuenta Cuenta: IInnnmmm - II Origen / nnn grupo / mmm Cuenta    
    ,NAME      VARCHAR(255)  NOT NULL   -- Nombre de la cuenta
    ,DESCR     TEXT   
-   ,EXPENSE   TINYINT       DEFAULT 1  COMMENT "Gastos"  
-   ,INCOME    TINYINT       DEFAULT 1  COMMENT "Ingresos"   
+   ,EXPENSE   TINYINT       DEFAULT  1  COMMENT "Gastos"  
+   ,INCOME    TINYINT       DEFAULT  1  COMMENT "Ingresos"   
+   ,TIPO      TINYINT       DEFAULT 20  COMMENT "Tipo de categoria: 10 - fijos  20 - variables "   
    ,SINCE     DATE         DEFAULT CURDATE()  COMMENT "Fecha de alta"
    ,UNTIL     DATE                            COMMENT "Fecha de baja"
    ,SYNC      TINYINT       DEFAULT 0  -- Indica si se ha sincronizado, editado, etc.   
@@ -142,12 +143,12 @@ CREATE TABLE  MOVEMENTS  (
 -- ------------------------------------------------
 DROP TABLE  IF EXISTS CLOSED CASCADE;
 CREATE TABLE  CLOSED  (
-    YEAR_CLOSE  SMALLINT UNSIGNED           NOT NULL           COMMENT 'Agno'
-   ,MONTH_CLOSE SMALLINT UNSIGNED           NOT NULL           COMMENT 'Mes'
-   ,IDGROUP    INT            NOT NULL           COMMENT 'Grupo de gastos'
-   ,IDCATEGORY INT UNSIGNED   NOT NULL           COMMENT 'Categoria del gasto'
-   ,AMOUNT     DECIMAL(7,3)   NOT NULL           COMMENT 'Importe el gasto'
-   ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.      
+    YEAR_CLOSE  SMALLINT    UNSIGNED NOT NULL           COMMENT 'Agno'
+   ,MONTH_CLOSE SMALLINT    UNSIGNED NOT NULL           COMMENT 'Mes'
+   ,IDGROUP    INT          UNSIGNED NOT NULL           COMMENT 'Grupo de gastos'
+   ,IDCATEGORY INT          UNSIGNED NOT NULL           COMMENT 'Categoria del gasto'
+   ,AMOUNT     DECIMAL(7,3)          NOT NULL           COMMENT 'Importe el gasto'
+   ,SYNC       TINYINT                         DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.      
    ,PRIMARY KEY (YEAR_CLOSE, MONTH_CLOSE, IDGROUP, IDCATEGORY)                 -- Primary key
    ,INDEX       (SYNC)               -- For synch
 );

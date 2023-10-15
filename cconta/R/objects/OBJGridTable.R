@@ -13,17 +13,21 @@ OBJGridTable = R6::R6Class("CONTA.OBJ.GRID.TABLE"
       }
       ,setData = function (data) {
          private$dfData = data
+         # Insertar la columna de totales en funcion de dias o meses
          colLast = ncol(dfData)
-         if (colLast > 11) { # Caso sin datos
-             colFirst = colLast - 11
-             private$dfData$Total = rowSums(dfData[,colFirst:colLast])
-         }
+         colFirst = ifelse (colLast > 30, 30, 11)
+         #if (colLast > 11) { # Caso sin datos
+         #    colFirst = colLast - 11
+         colFirst = colLast - colFirst
+         private$dfData$Total = rowSums(dfData[,colFirst:colLast])
+         #}
          invisible(self)
       }
       ,getTable = function (id = NULL, grouped=TRUE) {
+          agno = ifelse (ncol(dfData) > 30, FALSE, TRUE)
           mgroup = self$grouping
           if (!grouped) mgroup = NULL
-          cols = lapply(colnames(dfData), function(x) makeColDef(x))
+          cols = lapply(colnames(dfData), function(x) makeColDef(x, agno))
           names(cols) = colnames(dfData)
           mtheme = reactable::reactableTheme(cellPadding = "0px 0px")
 
@@ -47,19 +51,20 @@ OBJGridTable = R6::R6Class("CONTA.OBJ.GRID.TABLE"
           js_code = paste(js_code, "}", sep="\n")
           htmlwidgets::JS(js_code)
        }
-      ,makeColDef = function (colname) {
+      ,makeColDef = function (colname, agno) {
           if (startsWith(colname, "id")) return (reactable::colDef(show = FALSE))
-          coldef = reactable::colDef(name = getColName(colname))
+          coldef = reactable::colDef(name = getColName(colname, agno))
           if (!is.na(suppressWarnings(as.integer(colname)))) {
              if (!is.null(grouping)) coldef$aggregate="sum"
           }
           coldef
        }
-      ,getColName = function (colName) {
+      ,getColName = function (colName, agno) {
          colNum = suppressWarnings(as.integer(colName))
-         if (!is.na(colNum)) return (month_short(colNum))
-         if (colName == "group")    return ("Grupo")
-         if (colName == "category") return ("Categoria")
+         if (!is.na(colNum) && agno) return (month_short(colNum))
+         if (colName == "group")     return ("Grupo")
+         if (colName == "category")  return ("Categoria")
+         colName
        }
    )
 )

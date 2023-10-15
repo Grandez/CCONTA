@@ -24,6 +24,7 @@ TBLMovements    = R6::R6Class("CONTA.TBL.MOVEMENTS"
              ,type       = "TYPE"
              ,parent     = "PARENT"
              ,active     = "ACTIVE"
+             ,variable   = "VARIABLE"
              ,sync       = "SYNC"
             )
      )

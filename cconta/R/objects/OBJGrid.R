@@ -8,10 +8,8 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
    ,inherit    = OBJBase
    ,public = list(
        initialize = function(factory, ...) {
-          browser()
          super$initialize(factory, TRUE)
-         private$tblGroups     = factory$getTable("Groups")
-         private$tblCategories = factory$getTable("Categories")
+         private$objGroups     = factory$getObject("Groups")
          args = JGGTools::args2list(...)
          if (!is.null(args$all)) private$all = args$all
          
@@ -21,9 +19,13 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
          private$type = type
          invisible(self)
       }
-      ,getType = function (type) { 
-         private$type
+      ,setPeriod = function (period) { 
+         private$period = period
+         invisible(self)
       }
+      ,getType   = function () { private$type   }
+      ,getPeriod = function () { private$period }
+      
       ,showAll = function (all) {
          private$all = all
       }
@@ -52,23 +54,12 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
             tmp = data.frame(active=integer(0))
             data = cbind(data,tmp)
          }
-         if(! "active" %in% colnames(data))  data$active = 1
          
-         # los juntamos y los sumamos. 
-         # Ahora tenemos por cada grupo/categoria 12 registros
-         dfZeroes = mountGrid()
-         df1 = dfZeroes
-         df2 = data
-         if (!all) {
-             df1 = df1[df1$active == 1,]
-             df2 = df2[df2$active == 1,]
-         }
-         df = rbind(df1, df2)
-         df = df %>% dplyr::group_by(idGroup, idCategory, month) %>% 
+         df = rbind(mountGrid(), data)
+         df = df %>% dplyr::group_by(idGroup, idCategory, period) %>% 
                      dplyr::summarise(amount = sum(amount), .groups="keep")
-        
          # Ahora le hacemos spread y calculamos total
-         df = tidyr::spread(df, month, amount)
+         df = tidyr::spread(df, period, amount)
 
          dfb = getDFBase() 
          dfb = dfb[,c("idGroup", "idCategory", "group", "category")]
@@ -82,58 +73,53 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
       ,dfBaseIncome  = NULL
       ,dfBaseExpense = NULL
       ,dfData        = NULL
-      ,tblGroups     = NULL
-      ,tblCategories = NULL
+      ,objGroups     = NULL
       ,dfZeroes      = NULL
       ,all           = FALSE     # Mostrar inactivos?
       ,type          = 0         # Tipo de datos (gastos, ingresos, etc.)
+      ,period        = 0         # Period 0 = Agno y columnas en meses, si no mes y dias 
       ,loadBase      = function () {
-         dfg = tblGroups$table()
-         dfc = tblCategories$table()
+         dfg = objGroups$getGroups()
+         dfc = objGroups$getCategories()
          
          private$dfBaseAll     = makeDFBase(dfg,dfc)
          private$dfBaseIncome  = makeDFBase(dfg[dfg$income  == 1, ],dfc[dfc$income  == 1,])
          private$dfBaseExpense = makeDFBase(dfg[dfg$expense == 1, ],dfc[dfc$expense == 1,])
       }
       ,makeDFBase = function (dfg, dfc) {
-         dfg = dfg[,c("id", "name", "active")]
-         colnames(dfg) = c("idGroup", "group", "grpActive")
+         dfg = dfg[,c("id", "name")]
+         colnames(dfg) = c("idGroup", "group")
          
-         dfc = dfc[,c("idGroup", "id", "name", "active")]
-         colnames(dfc) = c("idGroup", "idCategory", "category", "catActive")
+         dfc = dfc[,c("idGroup", "id", "name")]
+         colnames(dfc) = c("idGroup", "idCategory", "category")
 
-         df = inner_join(dfc, dfg)
-         # Marcamos activo/inactivo (si grupo, nada esta activo, si categoria solo eso: 0-1 o 1-0)
-
-         # No se por que falla un min
-         df = df %>% mutate(active = grpActive + catActive) %>% mutate(active = if_else(active == 2,1, 0))
-#         df$active = min(df$grpActive, df$catActive)
-         
-         df$grpActive = NULL
-         df$catActive = NULL
-         df
+         inner_join(dfc, dfg)
       }
       ,getDFBase = function () {
-         if (type == CTES$DATA$Expenses) return (dfBaseExpense)
-         if (type == CTES$DATA$Incomes)  return (dfBaseIncome)
-         dfBseAll
+         if (type == CTES$TYPE$Expenses) return (dfBaseExpense)
+         if (type == CTES$TYPE$Incomes)  return (dfBaseIncome)
+         dfBaseAll
       }
       ,mountGrid = function () {
-        dfb = getDFBase()
+         dfb = getDFBase()
 
-        # Creamos un df clave/mes/0 (donde clave va de 1 a 12)
-        dft = data.frame(month=seq(1,12), amount=0)
+         # Creamos un df clave/mes o dia/0 (donde clave va de 1 a 12)
+         if (period == 0) {
+             dft = data.frame(period=seq(1,12), amount=0)   
+         } else {
+            dft = data.frame(period=seq(1,31), amount=0)  
+         }
 
-        # Ahora hacemos un full join por amount (que es la clave)
-        #Y tenemos group/category/mes/0
-        dfKeys = dfb[,c("idGroup", "idCategory", "active")]
+         # Ahora hacemos un full join por amount (que es la clave)
+         # Y tenemos group/category/mes/0
+         dfKeys = dfb[,c("idGroup", "idCategory")]
         
-        if (nrow(dfKeys) == 0) {
-           private$dfZeroes = cbind(dfb, data.frame(amount=numeric(), month=integer()))
-        } else {
-           dfKeys$amount = 0
-           private$dfZeroes = full_join(dfKeys,dft, by="amount", multiple="all")
-        }
+         if (nrow(dfKeys) == 0) {
+             private$dfZeroes = cbind(dfb, data.frame(amount=numeric(), period=integer()))
+         } else {
+             dfKeys$amount = 0
+             private$dfZeroes = full_join(dfKeys,dft, by="amount", multiple="all")
+         }
       }
    )
 )

@@ -15,11 +15,17 @@ OBJGroups = R6::R6Class("JGG.OBJ.GROUPS"
          df = loadGroups()
          df %>% dplyr::filter(since <= date & until >= date)
       }
-      ,getGroupsAtYear = function (year) {
+      ,getGroupsByPeriod = function (year, month) {
          # Devuelve los grupos que estan o han estado activos en ese agno
-         if (missing(year)) year = lubridate::year(Sys.Date())
+         if (missing(year))  year  = lubridate::year(Sys.Date())
+         if (missing(month)) month = 0
          df = loadGroups()
-         df %>% dplyr::filter(lubridate::year(since) <= year & lubridate::year(until) >= year)
+         df = df %>% dplyr::filter(lubridate::year(since) <= year & lubridate::year(until) >= year)
+         if (month > 0) { 
+            df = df %>% dplyr::filter(lubridate::month(since) <= month & 
+                                      lubridate::month(until) >= month)
+         }
+         df
       }
       ,getGroupsByType = function (type, date) {
          df = getGroups(date)
@@ -33,25 +39,40 @@ OBJGroups = R6::R6Class("JGG.OBJ.GROUPS"
       ,getAllGroups  = function () {
          loadGroups()
       }
-      ,getCategories = function (group, date) {
+      ,getCategories = function (date) {
+         # Devuelve las categorias activas a esa fecha o dia del sistema del grupo
+         if (missing(date)) date = Sys.Date()
+         loadCategories()
+      }
+      ,getCategoriesByGroup = function (group, date) {
          # Devuelve las categorias activas a esa fecha o dia del sistema del grupo
          if (missing(date)) date = Sys.Date()
          df = loadCategories()
          df %>% dplyr::filter(idGroup == group & since <= date & until >= date)
       }
       ,getCategoriesByType = function (idGroup, type, date) {
-         df = getCategories(idGroup, date)
+         df = getCategoriesByGroup(idGroup, date)
          if (type == CTES$TYPE$Expenses) df = df[df$expense == 1,]
          if (type == CTES$TYPE$Incomes)  df = df[df$income  == 1,]
          df
       }
-      ,getCategoriesAtYear = function (idGroup, year) {
+      ,getCategoriesByPeriod = function (year, month) {
          # Devuelve las categorias activas a esa fecha o dia del sistema del grupo
          if (missing(year)) year = lubridate::year(Sys.Date())
+         if (missing(month)) month = 0         
          df = loadCategories()
-         df %>% dplyr::filter(idGroup == idGroup & 
-                              lubridate::year(since) <= year & 
-                              lubridate::year(until) >= year)
+         df = df %>% dplyr::filter(lubridate::year(since) <= year & 
+                                   lubridate::year(until) >= year)
+
+         if (month > 0) { 
+            df = df %>% dplyr::filter(lubridate::month(since) <= month & 
+                                      lubridate::month(until) >= month)
+         }
+         df
+      }
+      ,getCategory = function (idGroup, idCategory) {
+         loadCategories()
+         as.list(dfCategories %>% filter(idGroup == idGroup & id == idCategory))
       }
       ,addGroup = function(...) {
          data = JGGTools::args2list(...)
@@ -88,11 +109,13 @@ OBJGroups = R6::R6Class("JGG.OBJ.GROUPS"
       ,dfGroups      = NULL
       ,dfCategories  = NULL
       ,loadGroups      = function () { 
+          if (!is.null(dfGroups)) return (dfGroups)
           private$dfGroups       = tblGroups$table()     
           private$dfGroups$lower = tolower(private$dfGroups$name)
           private$dfGroups
        }
       ,loadCategories  = function () { 
+         if (!is.null(dfCategories)) return (dfCategories)
          private$dfCategories = tblCategories$table() 
          private$dfCategories$lower = tolower(private$dfCategories$name)
          private$dfCategories
