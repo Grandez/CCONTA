@@ -1,4 +1,4 @@
-mod_budget_server = function(id, full, pnlParent, parent=NULL) {
+mod_budget_server = function(id, session) {
 ns = NS(id)
 PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
   ,portable   = FALSE
@@ -11,65 +11,120 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
          private$objBudget = factory$getObject("Budget")
       }
      ,refreshData = function() {
-        data = objBudget$getBudget()
-        objPage$setData(data)
+        df = objBudget$getBudgetByPeriod(self$data$period)
+        # Si son datos de un mes, vienen en columnas. Pasarlos a filas
+        if (self$data$period > 0) {
+           df = pivot_longer(df, cols=4:ncol(df), names_to = "period", values_to="amount")
+           df$period = as.integer(df$period) # Ajustar el dia que es caracter
+        }
+        objPage$setData(df, self$data$period)
+     }
+     ,updateBudget = function (amount) {
+        item = vars$item
+        item$amount = amount
+        objBudget$update(item, data$period, vars$expense)
      }
    )
   ,private = list(
-      objBudget    = NULL
+     objBudget = NULL
    )
 )
-   
+
 moduleServer(id, function(input, output, session) {
     pnl = WEB$getPanel(id, PNLBudget, NULL, session)
 
-   popupModal = function(failed = FALSE) {
-      info = pnl$vars$row
-      modalDialog(
-         tags$table(
-             tags$tr(tags$td("Grupo"),           tags$td(strong(info$Group)))
-            ,tags$tr(tags$td("Categoria"),       tags$td(strong(info$Category)))
-            ,tags$tr(tags$td(strong("Desde")),   tags$td(guiComboMonth(ns("cboFrmFrom"), info$month)))
-            ,tags$tr(tags$td(strong("Hasta")),   tags$td(guiComboMonth(ns("cboFrmTo"), 12)))
-            ,tags$tr(tags$td(strong("Importe")), tags$td(guiNumericInput (ns("numFrmAmount"),    NULL, info[[info$month]])))
-         )
-        ,if (failed)
-             div(tags$b("You did not input anything", style = "color: red;")),
-             footer = tagList(
-                modalButton("Cancel"),
-                actionButton(ns("btnFrmOK"), "OK")
-             )
-         )
-   }  
+    dataModal <- function(failed = FALSE) {
+       item = pnl$vars$item
+       monthNumber = ifelse(pnl$data$period == 0, as.integer(item$col), pnl$data$period)
+       monthName   = month_long(monthNumber)
+       if (pnl$data$period > 0) monthName = paste(monthName, "-", item$col)
+       modalDialog(
+           tags$h5(paste(item$group, "/" , item$category))
+          ,tags$h5(monthName)
+          ,guiNumericInput(ns("impFormBudget"), NULL, item[[item$col]])
+          ,span('El valor se aplicara a todo el año')
+          ,if (failed) {
+               div(tags$b("Invalid name of data object", style = "color: red;"))
+           }  
+          ,title = "Presupuesto"
+          ,footer = tagList(modalButton("Cancel"),actionButton(ns("formOK"), "Aplicar"))
+          ,easyClose = TRUE
+          ,fade = TRUE
+       )
+    }
+
+   # makePlot = function() {
+   #    df = pnl$getDataSummary()
+   #    df = df[df$idGroup > 0,]
+   #    df = df[,-c(1,2)]
+   #    dfi =  gather(df[df$Concepto == "Ingresos",], "Mes", "Concepto")
+   #    dfg =  gather(df[df$Concepto == "Gastos",],   "Mes", "Concepto")
+   #    colnames(dfi) = c("Mes", "Ingresos")
+   #    colnames(dfg) = c("Mes", "Gastos")
+   #    df2 = full_join(dfi, dfg, by="Mes")
+   #    
+   #    df2$Mes = as.integer(df2$Mes)
+   #    fig = plot_ly(df2, x=~Mes, y=~Gastos, type="bar")
+   #    #fig %>% add_trace(x=~Mes, y=~Ingresos, type="bar")
+   #    fig      
+   # }
    refresh = function () {
-      browser()
-      message("refresh")
       pnl$refreshData()
       output$tblExpenses = updTable({ pnl$getExpenses(ns("tblExpenses")) })
       output$tblIncomes  = updTable({ pnl$getIncomes(ns("tblIncomes")) })
       output$tblSummary  = updTable({ pnl$getSummary() })
-#      output$plot        = renderPlotly   ({ makePlot()                         })
+#      output$plot        = renderPlotly   ({ makePlot()  })
    }
-   
+   observeEvent(input$cboPeriod, { 
+      pnl$data$period = as.integer(input$cboPeriod)
+      refresh()
+   }, ignoreInit = TRUE)
+
+   observeEvent(input$tblExpenses, {
+      # Las filas son zero-based
+      value = suppressWarnings(as.integer(input$tblExpenses$rowId))
+      if (is.na(value)) return() # Es la fila de agrupacion
+      value = suppressWarnings(as.integer(input$tblExpenses$colId))
+      if (is.na(value)) return() # Es la columna de categoria
+
+      pnl$vars$expense  = TRUE
+      pnl$vars$item     = jsonlite::fromJSON(input$tblExpenses$detail)
+      pnl$vars$item$row = input$tblExpenses$row
+      pnl$vars$item$col = input$tblExpenses$colId
+      
+      showModal(dataModal())   
+   })
+   observeEvent(input$tblIncomes, {
+      # Las filas son zero-based
+      value = suppressWarnings(as.integer(input$tblExpenses$rowId))
+      if (is.na(value)) return() # Es la fila de agrupacion
+      value = suppressWarnings(as.integer(input$tblExpenses$colId))
+      if (is.na(value)) return() # Es la columna de categoria
+      
+      pnl$vars$expense  = FALSE
+      pnl$vars$item     = jsonlite::fromJSON(input$tblIncomes$detail)
+      pnl$vars$item$row = input$tblIncomes$row
+      pnl$vars$item$col = input$tblIncomes$colId
+
+      showModal(dataModal())   
+   })
+
+   observeEvent(input$formOK, {
+      if (input$impFormBudget < 0) {
+         showModal(dataModal(failed = TRUE))   
+      } else {
+        rc = pnl$updateBudget(input$impFormBudget)   
+        removeModal()  
+        if (rc) {
+            showModal(modalDialog(title = "La cagaste",easyClose = TRUE,footer = NULL))           
+        }
+      }
+      
+   })   
    if (!pnl$loaded) {
       pnl$loaded = TRUE
       refresh()
    }
-   observeEvent(input$tblExpenses, {
-      month = suppressWarnings(as.integer(input$tblExpenses$colName))
-      pnl$vars$row = jsonlite::fromJSON(input$tblExpenses$detail)
-      pnl$vars$row$month = month
    
-      if (!is.na(month) && !is.null(pnl$vars$row$idCategory)) {
-          showModal(popupModal())
-      }
-   })
-   observeEvent(input$btnFrmOK, {
-      pnl$vars$from = as.integer(input$cboFrmFrom)
-      pnl$vars$to   = as.integer(input$cboFrmTo)
-      pnl$vars$amount = input$numFrmAmount
-      removeModal()
-      pnl$updateBudget()
-   })
 })
 }

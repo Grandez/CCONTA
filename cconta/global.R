@@ -5,19 +5,13 @@ suppressMessages(library(tibble,             warn.conflicts = FALSE))
 suppressMessages(library(dplyr,              warn.conflicts = FALSE))
 suppressMessages(library(tidyr,              warn.conflicts = FALSE))
 suppressMessages(library(lubridate,          warn.conflicts = FALSE))
-# Shiny
-#suppressMessages(library(shiny,              warn.conflicts = FALSE))
-#suppressMessages(library(htmltools,          warn.conflicts = FALSE))
-#suppressMessages(library(shinyjs,            warn.conflicts = FALSE))
-#suppressMessages(library(shinyWidgets,       warn.conflicts = FALSE))
-#suppressMessages(library(shinydashboardPlus, warn.conflicts = FALSE))
+suppressMessages(library(openxlsx,           warn.conflicts = FALSE))
 suppressMessages(library(reactable,          warn.conflicts = FALSE))
 suppressMessages(library(plotly,             warn.conflicts = FALSE))
 
-library(openxlsx)
-
 suppressMessages(library(RMariaDB,     warn.conflicts = FALSE))
 
+# Forzar a recargar
 unloadNamespace("JGGShiny")
 suppressMessages(library(JGGShiny,          warn.conflicts = FALSE))
 
@@ -25,6 +19,4 @@ suppressMessages(library(JGGShiny,          warn.conflicts = FALSE))
 files = list.files(path="R", pattern="\\.R$", recursive=TRUE, full.names=T, ignore.case=F)
 sapply(files,source)
 
-#WEB = JGsGWEBROOT$new("test")
 WEB = WEBROOT$new()
-message("fin global")

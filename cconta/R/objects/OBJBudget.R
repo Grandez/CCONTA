@@ -13,13 +13,34 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
           loadBudget()
        }
       ,loadBudget = function () {
-         df = tblBudget$table(year = self$year, active = 1)
-         private$dfBudget = df[,c("idGroup", "idCategory", "month", "expense", "amount")]
+         private$dfBudget = tblBudget$table(year = self$year)
          invisible(self)
       }
       ,getBudget = function () {
          private$dfBudget
       }      
+      ,getBudgetByPeriod = function (month, expense) {
+         df = dfBudget
+         if (month == 0) {
+            df = dfBudget[, c("idGroup", "idCategory", "month", "expense", "00")]
+            colnames(df) = c("idGroup", "idCategory", "period", "expense", "amount")
+         } else {
+            df = dfBudget[dfBudget$month == month,]
+            df = df[,3:(ncol(df))]
+            df = within(df, rm("00", "sync"))
+         }   
+         if (missing(expense)) return (df)
+         df %>% dplyr::filter(expense == expense)
+      }
+      ,update = function (item, period, expense) {
+          private$period = period
+          private$expense = expense
+          if (period == 0)
+             updateMonths(item)
+          else
+             updateDays(item)
+       }   
+
       # ,refresh   = function() {
       #    # Se debe llamar cuando han cambiado grupos o categorias
       #    df = tblBudget$table(year = self$year, active = 1)
@@ -62,6 +83,9 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
       ,dfBase        = NULL
       ,dfTypes       = NULL
       ,dfBudget      = NULL
+      ,expense       = TRUE
+      ,period        = 0
+      ,year          = lubridate::year(Sys.Date())
 #      ,objGrid       = NULL
       ,loadBase      = function () {
         # Cogemos los grupos activos
@@ -75,6 +99,55 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
         
         private$dfBase = inner_join(dfc, dfg)
       }
+      ,updateMonths = function (item) {
+         rc = tryCatch({
+            tblBudget$db$begin()
+            lapply(as.integer(item$col):12, updMonth, item)
+            tblBudget$db$commit()
+            FALSE
+         }, error = function (e) {
+            tblBudget$db$rollback()
+            TRUE
+         })
+      }
+      ,updateDays = function (item) {
+         # Se actualiza desde ese dia hasta el final de agno
+         # Si no hay presupuesto para el mes completo, se le pone la suma
+         rc = tryCatch({
+            tblBudget$db$begin()
+            updDay(period, item$col, item)  # Mes actual
+            if (period < 12) lapply((period + 1):12, updDay, 1, item) # Resto meses
+            tblBudget$db$commit()
+            FALSE
+         }, error = function (e) {
+            tblBudget$db$rollback()
+            TRUE
+         })
+       }
+      ,updMonth = function (month, item) {
+         tblBudget$select( year    = private$year, month = month
+                          ,idGroup = item$idGroup, idCategory=item$idCategory
+                          ,expense = ifelse (expense, -1, 0), create=TRUE )
+         tblBudget$set('00' = item$amount)
+         tblBudget$apply()
+      }
+      ,updDay = function (period, day, item) {
+         day = as.integer(day)
+         tblBudget$select( year    = private$year, month = period
+                          ,idGroup = item$idGroup, idCategory=item$idCategory
+                          ,expense = ifelse (expense, -1, 0), create=TRUE )
+         
+         days = (31 - day + 1)
+         cols = sprintf("%02d", day:31)
+         data = as.list(rep(item$amount, days))
+         names(data) = cols
+         tblBudget$set(data)
+         
+         total = item$amount * (31 - day + 1)
+         if (tblBudget$current$'00' == 0) tblBudget$set('00' = total) 
+         tblBudget$apply()
+      }
+      
    #   ,loadBudget = function () {
    #      # Creamos un df clave/mes/0 (donde clave va de 1 a 12)
    #      dft = data.frame(month=seq(1,12), amount=0)

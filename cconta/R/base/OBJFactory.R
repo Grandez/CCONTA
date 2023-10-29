@@ -23,7 +23,7 @@ OBJFactory = R6::R6Class("JGG.CCONTA.FACTORY"
       ,finalize       = function() { 
           # message("OBJFactory FINALIZE Clearing factory")
           if (!is.null(DBFactory)) DBFactory$finalize()
-          private$objects   = HashMap$new() # Objects to garbage collector
+          private$objects   = NULL # HashMap$new() # Objects to garbage collector
           gc(verbose=FALSE)
       }
       ######################################################################

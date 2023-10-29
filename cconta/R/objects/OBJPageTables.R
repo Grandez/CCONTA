@@ -15,7 +15,7 @@ OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
          invisible(self)
       }
       ,setData = function (data, period) {
-         private$dfIncomes  = data[data$expense == 1,]
+         private$dfIncomes  = data[data$expense !=  1,]
          private$dfExpenses = data[data$expense == -1,]
          private$dfIncomes$expense  = NULL
          private$dfExpenses$expense = NULL
@@ -41,9 +41,11 @@ OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
          Acum = Balance
          for (idx in 2:length(Acum)) Acum[idx] = Acum[idx] + Acum[idx - 1]
          mat = rbind(df, Balance, Acum)
-
-         objTable$setData(as.data.frame(mat))
-         objTable$getTable(grouped=FALSE)
+         df = as.data.frame(mat)
+         df = cbind(group="Resumen", category=rownames(df), df)
+         rownames(df) = NULL
+         objTable$setData(df)
+         objTable$getTable() #(grouped=FALSE)
       }
    )
    ,private = list(

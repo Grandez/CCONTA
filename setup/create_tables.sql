@@ -74,35 +74,49 @@ CREATE TABLE CATEGORIES  (
    ,UNIQUE      (IDGROUP, ID, NAME)   -- Avoid duplicate names
 );
 
--- -- Tabla de Presupuestos
--- DROP TABLE  IF EXISTS BUDGET CASCADE;
--- CREATE TABLE BUDGET    (
---     ID         INT UNSIGNED   NOT NULL             COMMENT 'ID Unico prefijado'
---    ,IDGROUP    INT UNSIGNED   NOT NULL             COMMENT 'ID del grupo'
---    ,IDCATEGORY INT UNSIGNED   NOT NULL             COMMENT 'ID de la categoria'
---    ,IDMETHOD   INT UNSIGNED                        COMMENT 'ID del metodo de pago'
---    ,DATEOPE    DATE           NOT NULL             COMMENT 'Fecha de operacion'
---    ,DATEVAL    DATE           NOT NULL             COMMENT 'Fecha de valor'
---    ,FRECUENCY  TINYINT        NOT NULL DEFAULT 1   COMMENT 'Frecuencia del gasto en dias (0=puntual, mensual, bimensual, etc)'
---    ,AMOUNT     DECIMAL(7,3)   NOT NULL -- Importe
---    ,DESCR      TEXT   
---    ,ACTIVE    TINYINT         DEFAULT 1      
---    ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
---    ,PRIMARY KEY (ID, DATEVAL)         -- Primary key
--- );
 
 -- Tabla de Presupuestos
+DROP TABLE  IF EXISTS BUDGET CASCADE;
 CREATE TABLE BUDGET    (
-    IDGROUP    INT UNSIGNED   NOT NULL           COMMENT 'ID del grupo'
-   ,IDCATEGORY INT UNSIGNED   NOT NULL           COMMENT 'ID de la categoria'
-   ,NYEAR      SMALLINT       NOT NULL           COMMENT 'Numero del mes'   
-   ,NMONTH     TINYINT        NOT NULL           COMMENT 'Numero del mes'
-   ,AMOUNT     DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Importe'
-   ,EXPENSE    TINYINT        DEFAULT -1         COMMENT 'Es un gasto (-1) o un ingreso (1)'   
-   ,DESCR      TEXT   
-   ,ACTIVE     TINYINT         DEFAULT 1      
+    IDGROUP     INT UNSIGNED   NOT NULL           COMMENT 'ID del grupo'
+   ,IDCATEGORY  INT UNSIGNED   NOT NULL           COMMENT 'ID de la categoria'
+   ,BYEAR       SMALLINT       NOT NULL           COMMENT 'Numero del mes'   
+   ,BMONTH      TINYINT        NOT NULL           COMMENT 'Numero del mes'
+   ,EXPENSE     TINYINT        DEFAULT -1         COMMENT "Gastos"  
+   ,B00         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto mensual'
+   ,B01         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B02         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B03         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B04         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B05         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B06         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B07         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B08         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B09         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B10         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B11         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B12         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B13         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B14         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B15         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B16         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B17         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B18         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B19         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B20         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B21         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B22         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B23         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
+   ,B24         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B25         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B26         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B27         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B28         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B29         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
+   ,B30         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'
+   ,B31         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'         
    ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
-   ,PRIMARY KEY (IDGROUP, IDCATEGORY, NYEAR, NMONTH)   -- Avoid duplicate names   
+   ,PRIMARY KEY (BYEAR, BMONTH, IDGROUP, IDCATEGORY, EXPENSE)
 );
 
 -- Tabla de Gastos

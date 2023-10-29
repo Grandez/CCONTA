@@ -18,18 +18,22 @@ PNLStatusBase = R6::R6Class("CONTA.PNL.STATUS.BASE"
       initialize  = function (id, session, child) {
          super$initialize(id, session, child)
          private$objPage      = factory$getObject("PageTables")
+         self$data$period = 0 # Muestra meses o mes
+         # Los tipos son numeros secuenciales (1,2,3)
+         self$vars$types = rep(TRUE, max(unlist(CTES$MOVTYPE)))
+         self$data$variable = 3 # 1 - fijo, 2 - variable, 3 - todos
       }
      ,refreshData = function () {
+        browser()
         data = objMovements$getMovements()
         data = data[data$type %in% which(self$vars$types == TRUE),]
         data$month = lubridate::month(data$dateVal)
         df = data[,c("idGroup", "idCategory", "month", "expense", "amount")]
-        browser()
         objPage$setData(df)
      }
      ,getExpenses      = function (target) { objPage$getExpenses(target) }
      ,getIncomes       = function (target) { objPage$getIncomes (target) }     
-     ,getSummary       = function (target) { objPage$getSummary (NULL)   } 
+     ,getSummary       = function (target) { objPage$getSummary (target) } # Estaba a NULL 
      # ,getTableSummary  = function (target) { gridSummary$getReactable (target) }
      # ,getTableIncomes  = function (target) { gridIncomes$getReactable (target) }
      # ,getTableExpenses = function (target) { gridExpenses$getReactable(target) }

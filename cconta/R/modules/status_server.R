@@ -9,12 +9,9 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
       initialize  = function (id, parent, session) {
          super$initialize(id, session, TRUE)
          private$objMovements = factory$getObject("Movements")
-         # Los tipos son numeros secuenciales (1,2,3)
-         self$vars$types = rep(TRUE, max(unlist(CTES$MOVTYPE)))
-         self$data$period = 0
-         self$data$variable = 3 # 1 - fijo, 2 - variable, 3 - todos
       }
      ,refreshData = function() {
+        browser()
         df = objMovements$getMovementsByPeriod(self$data$period)
         df = df[df$type %in% which(self$vars$types == TRUE),]
         if (data$period == 0) {
@@ -22,7 +19,7 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
         } else {
             df$period = lubridate::day(df$dateVal)   
         }
-        if (data$variable != 3) { # Solo fios o variables
+        if (data$variable != 3) { # Solo fijos o variables
            fixed = ifelse(data$variable == 1, 0, -1)
            df = df[df$variable == fixed,]
         }
@@ -66,22 +63,29 @@ moduleServer(id, function(input, output, session) {
       refresh()
    }, ignoreInit = TRUE)
    observeEvent(input$chkCategory, {
-      browser()
       pnl$data$variable = sum(as.integer(input$chkCategory))
       refresh()
    }, ignoreInit = TRUE)
-   observeEvent(input$swExpected, {
-      pnl$vars$types[CTES$TYPE$Expected] = input$swExpected
-      refresh()
-   }, ignoreInit = TRUE)
-   observeEvent(input$swProvision, {
-      message("swProvision")
-      pnl$vars$types[CTES$TYPE$Provision] = input$swExpected
-      refresh()
+   observeEvent(input$chkType, {
+      # 1 - Real ,2 - previsto
+      tmp = sum(as.integer(input$chkType))
+      browser()
+      # Pendiente
+#      pnl$data$variable = sum(as.integer(input$chkCategory))
+#      refresh()
    }, ignoreInit = TRUE)
    
+   # observeEvent(input$swExpected, {
+   #    pnl$vars$types[CTES$TYPE$Expected] = input$swExpected
+   #    refresh()
+   # }, ignoreInit = TRUE)
+   # observeEvent(input$swProvision, {
+   #    message("swProvision")
+   #    pnl$vars$types[CTES$TYPE$Provision] = input$swExpected
+   #    refresh()
+   # }, ignoreInit = TRUE)
+   
    if (!pnl$loaded) {
-      message("Loading")
       pnl$loaded = TRUE
       refresh()
    }

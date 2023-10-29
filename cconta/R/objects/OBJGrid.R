@@ -54,12 +54,13 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
             tmp = data.frame(active=integer(0))
             data = cbind(data,tmp)
          }
-         
+
          df = rbind(mountGrid(), data)
          df = df %>% dplyr::group_by(idGroup, idCategory, period) %>% 
                      dplyr::summarise(amount = sum(amount), .groups="keep")
+         
          # Ahora le hacemos spread y calculamos total
-         df = tidyr::spread(df, period, amount)
+         df = tidyr::spread(df, period, amount, fill=0)
 
          dfb = getDFBase() 
          dfb = dfb[,c("idGroup", "idCategory", "group", "category")]
@@ -120,6 +121,7 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
              dfKeys$amount = 0
              private$dfZeroes = full_join(dfKeys,dft, by="amount", multiple="all")
          }
+         dfZeroes  
       }
    )
 )

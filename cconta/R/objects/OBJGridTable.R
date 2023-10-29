@@ -16,11 +16,8 @@ OBJGridTable = R6::R6Class("CONTA.OBJ.GRID.TABLE"
          # Insertar la columna de totales en funcion de dias o meses
          colLast = ncol(dfData)
          colFirst = ifelse (colLast > 30, 30, 11)
-         #if (colLast > 11) { # Caso sin datos
-         #    colFirst = colLast - 11
          colFirst = colLast - colFirst
          private$dfData$Total = rowSums(dfData[,colFirst:colLast])
-         #}
          invisible(self)
       }
       ,getTable = function (id = NULL, grouped=TRUE) {
@@ -28,7 +25,15 @@ OBJGridTable = R6::R6Class("CONTA.OBJ.GRID.TABLE"
           mgroup = self$grouping
           if (!grouped) mgroup = NULL
           cols = lapply(colnames(dfData), function(x) makeColDef(x, agno))
+          
+          #La ultima columna se suma si hay agrupacion
+          if (!is.null(mgroup)) {
+             cols[[length(cols)]]$aggregate = "sum"
+             cols[[length(cols)]]$format = colFormat(digits = 2)
+          }
+          
           names(cols) = colnames(dfData)
+          
           mtheme = reactable::reactableTheme(cellPadding = "0px 0px")
 
           reactable::reactable( dfData, width="100%", pagination = FALSE, onClick=jscode(id)
@@ -42,7 +47,7 @@ OBJGridTable = R6::R6Class("CONTA.OBJ.GRID.TABLE"
         dfData        = NULL
        ,jscode = function(idTable) {
           if (is.null(idTable)) return (NULL)
-          data = paste("{ row: rowInfo.index + 1, col: colInfo.index + 1, colName: colInfo.id")
+          data = paste("{ rowIndex: rowInfo.index, rowId: rowInfo.id, colId: colInfo.id, colName: colInfo.name")
           data = paste(data, ",detail: JSON.stringify(rowInfo.row)}")
           evt = paste0("Shiny.setInputValue('", idTable, "',", data, ",{ priority: 'event' });")
 
@@ -56,6 +61,7 @@ OBJGridTable = R6::R6Class("CONTA.OBJ.GRID.TABLE"
           coldef = reactable::colDef(name = getColName(colname, agno))
           if (!is.na(suppressWarnings(as.integer(colname)))) {
              if (!is.null(grouping)) coldef$aggregate="sum"
+             coldef$format = colFormat(digits=2)
           }
           coldef
        }
