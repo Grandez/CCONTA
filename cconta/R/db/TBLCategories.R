@@ -18,10 +18,10 @@ TBLCategories   = R6::R6Class("TBL.CATEGORIES"
               ,desc     = "DESCR" 
               ,since    = "SINCE"
               ,until    = "UNTIL"
-              ,income   = "INCOME"
               ,expense  = "EXPENSE"
+              ,income   = "INCOME"
+              ,category = "CATEGORY"
               ,sync     = "SYNC"
-              ,variable = "VARIABLE"
          )
      )
 )

@@ -52,8 +52,8 @@ OBJGroups = R6::R6Class("JGG.OBJ.GROUPS"
       }
       ,getCategoriesByType = function (idGroup, type, date) {
          df = getCategoriesByGroup(idGroup, date)
-         if (type == CTES$TYPE$Expenses) df = df[df$expense == 1,]
-         if (type == CTES$TYPE$Incomes)  df = df[df$income  == 1,]
+         if (type == CTES$TYPE$Expenses) df = df[df$expense != 0,]
+         if (type == CTES$TYPE$Incomes)  df = df[df$income  != 0,]
          df
       }
       ,getCategoriesByPeriod = function (year, month) {
@@ -70,9 +70,9 @@ OBJGroups = R6::R6Class("JGG.OBJ.GROUPS"
          }
          df
       }
-      ,getCategory = function (group, category) {
+      ,getCategory = function (group, idcat) {
          loadCategories()
-         as.list(dfCategories %>% filter(idGroup == group & id == category))
+         as.list(dfCategories %>% filter(idGroup == group & id == idcat))
       }
       ,addGroup = function(...) {
          data = JGGTools::args2list(...)

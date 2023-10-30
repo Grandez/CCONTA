@@ -57,12 +57,10 @@ PNLInput = R6::R6Class("CONTA.PNL.INPUT"
         invisible(self)
      }
      ,setCategory = function (idCategory) {
-        set(idCategory = idCategory)
         item = objGroups$getCategory(data$idGroup, idCategory)
-        set(variable = item$variable)
+        set(idCategory = idCategory)
+        set(category = item$category)
      }
-     # ,add        = function(...) { objMov$add(...)    }
-     # ,loadBudget = function ()   { objMov$getBudget() }
    )
   ,private = list(
       .expense  = FALSE
@@ -150,10 +148,6 @@ moduleServer(id, function(input, output, session) {
    
    observeEvent(flags$type, ignoreInit = TRUE, {
       pnl$expense = ifelse(input$swType, CTES$TYPE$Expenses, CTES$TYPE$Incomes)
-      # df = pnl$getMethods()
-      # updateSelectInput(session, "cboMethods", choices = WEB$makeCombo(df))
-      # df = pnl$getGroups()
-      # updateSelectInput(session, "cboGroups", choices = WEB$makeCombo(df))
    })
    observeEvent(flags$date, ignoreInit = TRUE, {
       pnl$set(dateVal    = input$dtInput)

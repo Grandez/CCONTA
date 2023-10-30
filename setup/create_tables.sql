@@ -66,7 +66,7 @@ CREATE TABLE CATEGORIES  (
    ,DESCR     TEXT   
    ,EXPENSE   TINYINT       DEFAULT  1  COMMENT "Gastos"  
    ,INCOME    TINYINT       DEFAULT  1  COMMENT "Ingresos"   
-   ,VARIABLE  TINYINT       DEFAULT -1  COMMENT "Categoria de mov. fijo o variable"   
+   ,CATEGORIA TINYINT       DEFAULT 20  COMMENT "Categoria de mov. fijo 10 / variable 20 / Aperiodico 30"   
    ,SINCE     DATE         DEFAULT CURDATE()  COMMENT "Fecha de alta"
    ,UNTIL     DATE                            COMMENT "Fecha de baja"
    ,SYNC      TINYINT       DEFAULT 0  -- Indica si se ha sincronizado, editado, etc.   

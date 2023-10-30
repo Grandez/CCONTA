@@ -18,25 +18,22 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
    ,inherit    = OBJBase
    ,public = list(
        initialize    = function(factory, ...) {
-         super$initialize(factory, TRUE)
-         args = JGGTools::args2list(...)
-         if (!is.null(args$year)) private$year = args$year
+          super$initialize(factory, TRUE)
+          args = JGGTools::args2list(...)
+          if (!is.null(args$year)) private$year = args$year
 
-         private$tblMethods    = factory$getTable("Methods")
-         # private$tblGroups     = factory$getTable("Groups")
-         # private$tblCategories = factory$getTable("Categories")
-         private$tblMovements  = factory$getTable("Movements")
-         private$tblParents    = factory$getTable("Itemizeds")
-         private$tblTags       = factory$getTable("Tags")
-#         private$dfGroups      = tblGroups$table(active = 1)
-         loadMovements()
+          private$tblMethods    = factory$getTable("Methods")
+          private$tblMovements  = factory$getTable("Movements")
+          private$tblParents    = factory$getTable("Itemizeds")
+          private$tblTags       = factory$getTable("Tags")
+          loadMovements()
        }
       ,loadMovements = function () {
-         # Carga todos los movimientos del agno para evitar accesos a BBDD
-         df = tblMovements$recordset(
-                 dateVal = list(func="YEAR", value = year)
-                ,active = list(value = 1)
-         )
+          # Carga todos los movimientos del agno para evitar accesos a BBDD
+          df = tblMovements$recordset(
+                  dateVal = list(func="YEAR", value = year)
+                 ,active = list(value = 1)
+               )
          private$dfMov = df[,!(names(df) %in% c("active", "sync"))]
       }
       ,getMovements = function (expense) {
@@ -49,23 +46,6 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          if (missing(expense)) return (df)
          df %>% dplyr::filter(expense == expense)
       }
-      
-      # ,getGroups     = function (type = c("all", "expenses", "incomes")) { 
-      #     mtype = "all"
-      #     if (!missing(type)) mtype = match.arg(type)
-      #     df = dfGroups
-      #     if (mtype == "expenses") df = df[df$expense == 1,]
-      #     if (mtype == "income")   df = df[df$income  == 1,]
-      #     df
-      # }
-      # ,getCategories = function (expense = TRUE, group = 0) { 
-      #    active  = list(name = "active",  value = 1)
-      #    idGroup = list(name = "idGroup", value = group) 
-      #    if (group == 0) idGroup = NULL
-      #    field = list(name = "income", value = 1)
-      #    if (expense) field$name = "expense"
-      #    tblCategories$recordset(field, active, idGroup) 
-      #  }
       ,getMethods    = function (expenses = TRUE)          { 
          if ( expenses) df = tblMethods$table(expense = 1, active = 1) 
          if (!expenses) df = tblMethods$table(income  = 1, active = 1)
@@ -73,16 +53,6 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
         }
       ,getExpenses   = function ()          { getMovements (expense = 1) }
       ,getIncomes    = function ()          { getMovements (expense = 0) }
-#       ,getMovements  = function (expense)  {
-#          browser()
-#          df = tblMovements$recordset(
-#                  dateVal = list(func="YEAR", value = year)
-#                 ,active = list(value = 1)
-#                 ,expense = list(value = expense))
-# #               (expense=expense, active = 1)
-#          private$dfMov = df %>% filter(lubridate::year(dateVal) == year)
-#          dfMov
-#       }
       ,getMovementsFull  = function (...)  {
          df = getMovements(...)
          if (nrow(df) == 0) return (df)

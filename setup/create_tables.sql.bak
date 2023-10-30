@@ -78,10 +78,11 @@ CREATE TABLE CATEGORIES  (
 -- Tabla de Presupuestos
 DROP TABLE  IF EXISTS BUDGET CASCADE;
 CREATE TABLE BUDGET    (
-    IDGROUP    INT UNSIGNED   NOT NULL           COMMENT 'ID del grupo'
-   ,IDCATEGORY INT UNSIGNED   NOT NULL           COMMENT 'ID de la categoria'
-   ,BYEAR      SMALLINT       NOT NULL           COMMENT 'Numero del mes'   
-   ,BMONTH     TINYINT        NOT NULL           COMMENT 'Numero del mes'
+    IDGROUP     INT UNSIGNED   NOT NULL           COMMENT 'ID del grupo'
+   ,IDCATEGORY  INT UNSIGNED   NOT NULL           COMMENT 'ID de la categoria'
+   ,BYEAR       SMALLINT       NOT NULL           COMMENT 'Numero del mes'   
+   ,BMONTH      TINYINT        NOT NULL           COMMENT 'Numero del mes'
+   ,EXPENSE     TINYINT        DEFAULT -1         COMMENT "Gastos"  
    ,B00         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto mensual'
    ,B01         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'   
    ,B02         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'      
@@ -115,7 +116,7 @@ CREATE TABLE BUDGET    (
    ,B30         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'
    ,B31         DECIMAL(7,3)   DEFAULT 0.0        COMMENT 'Presupuesto del dia'         
    ,SYNC       TINYINT        DEFAULT 0 -- Indica si se ha sincronizado, editado, etc.   
-   ,PRIMARY KEY (BYEAR, BMONTH, IDGROUP, IDCATEGORY)
+   ,PRIMARY KEY (BYEAR, BMONTH, IDGROUP, IDCATEGORY, EXPENSE)
 );
 
 -- Tabla de Gastos
