@@ -4,14 +4,14 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
   ,portable   = FALSE
   ,cloneable  = FALSE
   ,lock_class = TRUE
-  ,inherit    = PNLStatusBase 
+  ,inherit    = PNLStatus 
   ,public = list(
       initialize  = function (id, parent, session) {
          super$initialize(id, session, TRUE)
          private$objBudget = factory$getObject("Budget")
       }
-     ,refreshData = function() {
-        df = objBudget$getBudgetByPeriod(self$data$period)
+     ,refreshData = function(reload) {
+        df = objBudget$getBudgetByPeriod(self$data$period, reload)
         # Si son datos de un mes, vienen en columnas. Pasarlos a filas
         if (self$data$period > 0) {
            df = pivot_longer(df, cols=4:ncol(df), names_to = "period", values_to="amount")
@@ -19,6 +19,10 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
         }
         objPage$setData(df, self$data$period)
      }
+     # ,setCategories = function (categories) {
+     #    objBudget$setCategories(categories)
+     #    invisible(self)
+     # }
      ,updateBudget = function (amount) {
         item = vars$item
         item$amount = amount
@@ -68,8 +72,8 @@ moduleServer(id, function(input, output, session) {
    #    #fig %>% add_trace(x=~Mes, y=~Ingresos, type="bar")
    #    fig      
    # }
-   refresh = function () {
-      pnl$refreshData()
+   refresh = function (reload = TRUE) {
+      pnl$refreshData(reload)
       output$tblExpenses = updTable({ pnl$getExpenses(ns("tblExpenses")) })
       output$tblIncomes  = updTable({ pnl$getIncomes(ns("tblIncomes")) })
       output$tblSummary  = updTable({ pnl$getSummary() })
@@ -77,8 +81,13 @@ moduleServer(id, function(input, output, session) {
    }
    observeEvent(input$cboPeriod, { 
       pnl$data$period = as.integer(input$cboPeriod)
-      refresh()
+      refresh(FALSE)
    }, ignoreInit = TRUE)
+   observeEvent(input$chkCategories, { 
+      pnl$setCategories(input$chkCategories)
+      refresh(FALSE)
+   }, ignoreInit = TRUE)
+   
 
    observeEvent(input$tblExpenses, {
       # Las filas son zero-based
@@ -117,10 +126,12 @@ moduleServer(id, function(input, output, session) {
         removeModal()  
         if (rc) {
             showModal(modalDialog(title = "La cagaste",easyClose = TRUE,footer = NULL))           
+        } else {
+           refresh(TRUE)
         }
       }
-      
    })   
+   
    if (!pnl$loaded) {
       pnl$loaded = TRUE
       refresh()

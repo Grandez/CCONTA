@@ -12,7 +12,7 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
          private$objGroups     = factory$getObject("Groups")
          args = JGGTools::args2list(...)
          if (!is.null(args$all)) private$all = args$all
-         
+         setArrayCategories()         
          refresh()
        }
       ,setType = function (type) { 
@@ -23,6 +23,11 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
          private$period = period
          invisible(self)
       }
+      ,setCategories = function (categories) {
+         # la lista de categorias de movimientos, asi que la resetea
+         private$categories   = array(rep(FALSE, CTES$MAX_CATEGORIES))
+         lapply(as.integer(categories), function (idx) private$categories[idx] = TRUE)
+       }
       ,getType   = function () { private$type   }
       ,getPeriod = function () { private$period }
       
@@ -54,7 +59,7 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
             tmp = data.frame(active=integer(0))
             data = cbind(data,tmp)
          }
-
+         
          df = rbind(mountGrid(), data)
          df = df %>% dplyr::group_by(idGroup, idCategory, period) %>% 
                      dplyr::summarise(amount = sum(amount), .groups="keep")
@@ -62,9 +67,9 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
          # Ahora le hacemos spread y calculamos total
          df = tidyr::spread(df, period, amount, fill=0)
 
-         dfb = getDFBase() 
-         dfb = dfb[,c("idGroup", "idCategory", "group", "category")]
-         res = dplyr::inner_join(dfb, df,by=c("idGroup", "idCategory"))
+         dfb = getGroupsAndCategories()
+
+         res = dplyr::left_join(dfb, df,by=c("idGroup", "idCategory"))
          if (!is.null(oldType)) setType(oldType)
          res
       }
@@ -78,21 +83,27 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
       ,dfZeroes      = NULL
       ,all           = FALSE     # Mostrar inactivos?
       ,type          = 0         # Tipo de datos (gastos, ingresos, etc.)
-      ,period        = 0         # Period 0 = Agno y columnas en meses, si no mes y dias 
+      ,period        = 0         # Period 0 = Agno y columnas en meses, si no mes y dias
+      ,categories = array(rep(FALSE, CTES$MAX_CATEGORIES))
+      ,setArrayCategories = function() {
+         private$categories[CTES$CAT_FIXED] = TRUE
+         private$categories[CTES$CAT_VARIABLE] = TRUE
+         private$categories[CTES$CAT_APERIODIC] = TRUE
+       }
       ,loadBase      = function () {
          dfg = objGroups$getGroups()
          dfc = objGroups$getCategories()
          
          private$dfBaseAll     = makeDFBase(dfg,dfc)
-         private$dfBaseIncome  = makeDFBase(dfg[dfg$income  == 1, ],dfc[dfc$income  == 1,])
-         private$dfBaseExpense = makeDFBase(dfg[dfg$expense == 1, ],dfc[dfc$expense == 1,])
+         private$dfBaseIncome  = makeDFBase(dfg[dfg$income  != 0, ],dfc[dfc$income  != 0,])
+         private$dfBaseExpense = makeDFBase(dfg[dfg$expense != 0, ],dfc[dfc$expense != 0,])
       }
       ,makeDFBase = function (dfg, dfc) {
          dfg = dfg[,c("id", "name")]
          colnames(dfg) = c("idGroup", "group")
          
-         dfc = dfc[,c("idGroup", "id", "name")]
-         colnames(dfc) = c("idGroup", "idCategory", "category")
+         dfc = dfc[,c("idGroup", "id", "name", "category")]
+         colnames(dfc) = c("idGroup", "idCategory", "category", "class")
 
          inner_join(dfc, dfg)
       }
@@ -123,5 +134,23 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
          }
          dfZeroes  
       }
+     ,getGroupsAndCategories = function () {
+         dfb = getDFBase() 
+         dfb = dfb[,c("idGroup", "idCategory", "group", "category", "class")]
+
+         # Ahora se filtra por las categorias fijo/variable/aperiodico
+         dfc = NULL
+         for (cat in which(categories)) {
+              dfTmp = dfb %>% filter(class == cat)
+              if (is.null(dfc)) {
+                  dfc = dfTmp
+              } else {
+                  dfc = rbind(dfc, dfTmp)
+              }
+         }
+         dfc$class = NULL # Quitar la columna
+         dfc
+     }   
+      
    )
 )

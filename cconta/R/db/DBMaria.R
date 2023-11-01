@@ -112,6 +112,7 @@ MARIADB = R6::R6Class("YATA.DB.MYSQL"
           #      if (isolated) endIsolated(conn, FALSE)
           #      SQLError("EXECUTE", origin=cond$message, sql=qry, action="execute")
           },error = function (cond) {
+             browser()
                sqlcode = getSQLCode(cond)
                if (isolated) endIsolated(conn, FALSE)
                SQLError( "SQL EXECUTE ERROR",origin=cond$message,sql=qry

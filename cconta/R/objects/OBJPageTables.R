@@ -1,4 +1,7 @@
-# Genera la tabla web de meses o dias
+# Genera la tabla de meses o dias
+# Con sus filtros y sus cosas
+# Es usada por el objeto de paginas PNLStatus
+#
 OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
    ,portable   = FALSE
    ,cloneable  = FALSE
@@ -9,14 +12,16 @@ OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
          super$initialize(factory, TRUE)
          private$objGrid  = factory$getObject("Grid")
          private$objTable = factory$getObject("GridTable", grouping="group")
+ 
        }
       ,setPeriod = function (period) {
          private$period = period
          invisible(self)
       }
+      ,setCategories = function(categories) { objGrid$setCategories(categories) }
       ,setData = function (data, period) {
-         private$dfIncomes  = data[data$expense !=  1,]
-         private$dfExpenses = data[data$expense == -1,]
+         private$dfIncomes  = data[data$expense == 0,]
+         private$dfExpenses = data[data$expense != 0,]
          private$dfIncomes$expense  = NULL
          private$dfExpenses$expense = NULL
          if (!missing(period)) self$setPeriod(period)
@@ -33,8 +38,8 @@ OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
          getTable(target, dfIncomes)  
       }
       ,getSummary = function (target) {
-         Ingresos = totals(objGrid$getGrid(dfIncomes,  CTES$DATA$Incomes))
-         Gastos   = totals(objGrid$getGrid(dfExpenses, CTES$DATA$Expenses)) * -1
+         Ingresos = totals(objGrid$getGrid(dfIncomes,  CTES$TYPE$Incomes))
+         Gastos   = totals(objGrid$getGrid(dfExpenses, CTES$TYPE$Expenses)) * -1
 
          df = rbind(Ingresos, Gastos)
          Balance = colSums(df)

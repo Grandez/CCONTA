@@ -19,7 +19,8 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
       ,getBudget = function () {
          private$dfBudget
       }      
-      ,getBudgetByPeriod = function (month, expense) {
+      ,getBudgetByPeriod = function (month, reload=TRUE) {
+         if (reload) loadBudget()
          df = dfBudget
          if (month == 0) {
             df = dfBudget[, c("idGroup", "idCategory", "month", "expense", "00")]
@@ -29,8 +30,9 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
             df = df[,3:(ncol(df))]
             df = within(df, rm("00", "sync"))
          }   
-         if (missing(expense)) return (df)
-         df %>% dplyr::filter(expense == expense)
+         # if (missing(expense)) return (df)
+         # df %>% dplyr::filter(expense == expense)
+         df
       }
       ,update = function (item, period, expense) {
           private$period = period
@@ -60,6 +62,10 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
        }
       ,getExpensesTotal  = function() { totals(getExpenses()) }
       ,getIncomesTotal   = function() { totals(getIncomes())  }
+      ,setCategories     = function(categories) {
+         objGrid$setCategories(categories)
+         invisible(self)
+      }
       ,setBudget     = function(data) {
          tryCatch({
             tblBudget$db$begin()

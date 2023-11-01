@@ -10,7 +10,7 @@ TBLBudget   = R6::R6Class("CONTA.TBL.BUDGET"
      )
      ,private = list (
            tblName = "BUDGET"
-          ,key = c("year", "month", "group", "category")
+          ,key = c("year", "month", "idGroup", "idCategory")
           ,fields = list(
               year        = "BYEAR"
              ,month       = "BMONTH"             

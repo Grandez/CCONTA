@@ -9,7 +9,7 @@
 #  Es decir, heredaran de una clase comun
 #
 ############################################################
-PNLStatusBase = R6::R6Class("CONTA.PNL.STATUS.BASE"
+PNLStatus     = R6::R6Class("CONTA.PNL.STATUS"
   ,portable   = FALSE
   ,cloneable  = FALSE
   ,lock_class = TRUE
@@ -23,6 +23,11 @@ PNLStatusBase = R6::R6Class("CONTA.PNL.STATUS.BASE"
          self$vars$types = rep(TRUE, max(unlist(CTES$MOVTYPE)))
          self$data$variable = 3 # 1 - fijo, 2 - variable, 3 - todos
       }
+     ,setCategories = function(categories) {
+        # la lista de categorias de movimientos, asi que la resetea
+        objPage$setCategories(categories)
+        invisible(self)
+     }
      ,refreshData = function () {
         browser()
         data = objMovements$getMovements()
