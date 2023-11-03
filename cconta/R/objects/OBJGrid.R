@@ -59,8 +59,10 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
             tmp = data.frame(active=integer(0))
             data = cbind(data,tmp)
          }
-         
+
+         dfg = mountGrid()
          df = rbind(mountGrid(), data)
+         
          df = df %>% dplyr::group_by(idGroup, idCategory, period) %>% 
                      dplyr::summarise(amount = sum(amount), .groups="keep")
          

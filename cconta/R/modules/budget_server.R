@@ -77,7 +77,7 @@ moduleServer(id, function(input, output, session) {
    }
    observeEvent(input$cboPeriod, { 
       pnl$data$period = as.integer(input$cboPeriod)
-      refresh(FALSE)
+      refresh()
    }, ignoreInit = TRUE)
    observeEvent(input$chkCategories, { 
       pnl$setCategories(input$chkCategories)

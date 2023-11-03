@@ -21,17 +21,17 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
       }      
       ,getBudgetByPeriod = function (month, reload=TRUE) {
          if (reload) loadBudget()
-         df = dfBudget
+
          if (month == 0) {
             df = dfBudget[, c("idGroup", "idCategory", "month", "expense", "00")]
-            colnames(df) = c("idGroup", "idCategory", "period", "expense", "amount")
          } else {
             df = dfBudget[dfBudget$month == month,]
-            df = df[,3:(ncol(df))]
-            df = within(df, rm("00", "sync"))
+            df = within(df, rm("year", "month", "00", "sync"))
             df = pivot_longer(df, cols=4:ncol(df), names_to = "period", values_to="amount")
             df$period = as.integer(df$period) # Ajustar el dia que es caracter
+            df = df[, c("idGroup", "idCategory", "period", "expense",  "amount")]
          }   
+         colnames(df) = c("idGroup", "idCategory", "period", "expense", "amount")
          df
       }
       ,update = function (item, period, expense) {
