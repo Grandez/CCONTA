@@ -4,7 +4,7 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
   ,portable   = FALSE
   ,cloneable  = FALSE
   ,lock_class = TRUE
-  ,inherit    = PNLStatus 
+  ,inherit    = PNLStatusBase 
   ,public = list(
       initialize  = function (id, parent, session) {
          super$initialize(id, session, TRUE)
@@ -13,16 +13,12 @@ PNLBudget = R6::R6Class("CONTA.PNL.BUDGET"
      ,refreshData = function(reload) {
         df = objBudget$getBudgetByPeriod(self$data$period, reload)
         # Si son datos de un mes, vienen en columnas. Pasarlos a filas
-        if (self$data$period > 0) {
-           df = pivot_longer(df, cols=4:ncol(df), names_to = "period", values_to="amount")
-           df$period = as.integer(df$period) # Ajustar el dia que es caracter
-        }
+        # if (self$data$period > 0) {
+        #    df = pivot_longer(df, cols=4:ncol(df), names_to = "period", values_to="amount")
+        #    df$period = as.integer(df$period) # Ajustar el dia que es caracter
+        # }
         objPage$setData(df, self$data$period)
      }
-     # ,setCategories = function (categories) {
-     #    objBudget$setCategories(categories)
-     #    invisible(self)
-     # }
      ,updateBudget = function (amount) {
         item = vars$item
         item$amount = amount
@@ -74,9 +70,9 @@ moduleServer(id, function(input, output, session) {
    # }
    refresh = function (reload = TRUE) {
       pnl$refreshData(reload)
-      output$tblExpenses = updTable({ pnl$getExpenses(ns("tblExpenses")) })
-      output$tblIncomes  = updTable({ pnl$getIncomes(ns("tblIncomes")) })
-      output$tblSummary  = updTable({ pnl$getSummary() })
+      output$tblExpenses = updTable({ pnl$getExpensesTable(ns("tblExpenses")) })
+      output$tblIncomes  = updTable({ pnl$getIncomesTable(ns("tblIncomes")) })
+      output$tblSummary  = updTable({ pnl$getSummaryTable() })
 #      output$plot        = renderPlotly   ({ makePlot()  })
    }
    observeEvent(input$cboPeriod, { 

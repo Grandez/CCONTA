@@ -29,9 +29,9 @@ OBJBudget = R6::R6Class("CONTA.OBJ.BUDGET"
             df = dfBudget[dfBudget$month == month,]
             df = df[,3:(ncol(df))]
             df = within(df, rm("00", "sync"))
+            df = pivot_longer(df, cols=4:ncol(df), names_to = "period", values_to="amount")
+            df$period = as.integer(df$period) # Ajustar el dia que es caracter
          }   
-         # if (missing(expense)) return (df)
-         # df %>% dplyr::filter(expense == expense)
          df
       }
       ,update = function (item, period, expense) {

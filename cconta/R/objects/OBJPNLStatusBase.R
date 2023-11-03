@@ -9,7 +9,7 @@
 #  Es decir, heredaran de una clase comun
 #
 ############################################################
-PNLStatus     = R6::R6Class("CONTA.PNL.STATUS"
+PNLStatusBase     = R6::R6Class("CONTA.PNL.STATUS.BASE"
   ,portable   = FALSE
   ,cloneable  = FALSE
   ,lock_class = TRUE
@@ -29,16 +29,15 @@ PNLStatus     = R6::R6Class("CONTA.PNL.STATUS"
         invisible(self)
      }
      ,refreshData = function () {
-        browser()
         data = objMovements$getMovements()
         data = data[data$type %in% which(self$vars$types == TRUE),]
         data$month = lubridate::month(data$dateVal)
         df = data[,c("idGroup", "idCategory", "month", "expense", "amount")]
         objPage$setData(df)
      }
-     ,getExpenses      = function (target) { objPage$getExpenses(target) }
-     ,getIncomes       = function (target) { objPage$getIncomes (target) }     
-     ,getSummary       = function (target) { objPage$getSummary (target) } # Estaba a NULL 
+     ,getExpensesTable = function (target) { objPage$getExpensesTable(target) }
+     ,getIncomesTable  = function (target) { objPage$getIncomesTable (target) }     
+     ,getSummaryTable  = function (target) { objPage$getSummaryTable (target) } # Estaba a NULL 
      # ,getTableSummary  = function (target) { gridSummary$getReactable (target) }
      # ,getTableIncomes  = function (target) { gridIncomes$getReactable (target) }
      # ,getTableExpenses = function (target) { gridExpenses$getReactable(target) }

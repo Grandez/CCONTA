@@ -7,8 +7,9 @@ tagList(shinyjs::useShinyjs()
                  ,paths    = NULL,    cssFiles = NULL
                  ,jsFiles  = NULL, jsInit   = NULL
                  ,titleActive = FALSE,  lang     = "es"
-   ,JGGTab(id="budget",     "Presupuesto",    NULL, JGGUI("budget"))   
+
    ,JGGTab(id="status",     "Situacion",      NULL, JGGUI("status"))         
+   ,JGGTab(id="budget",     "Presupuesto",    NULL, JGGUI("budget"))      
 # ,JGGTab(id="test",     "Test",        NULL, JGGUI("test") )     
    ,JGGTab(id="input",    "Entrada",        NULL, JGGUI("input") )
 

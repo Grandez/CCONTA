@@ -18,6 +18,10 @@ OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
          private$period = period
          invisible(self)
       }
+      ,setAccumulated = function (accum) {
+         private$accumulated = as.logical(accum)
+         invisible(self)
+      }
       ,setCategories = function(categories) { objGrid$setCategories(categories) }
       ,setData = function (data, period) {
          private$dfIncomes  = data[data$expense == 0,]
@@ -27,17 +31,17 @@ OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
          if (!missing(period)) self$setPeriod(period)
          invisible(self)
       }
-      ,getExpenses = function (target) { 
+      ,getExpensesTable = function (target) { 
          objGrid$setType(CTES$TYPE$Expenses)
          objGrid$setPeriod(private$period)
          getTable(target, dfExpenses) 
        }
-      ,getIncomes  = function (target) { 
+      ,getIncomesTable  = function (target) { 
          objGrid$setType(CTES$TYPE$Incomes)
          objGrid$setPeriod(private$period)
          getTable(target, dfIncomes)  
       }
-      ,getSummary = function (target) {
+      ,getSummaryTable = function (target) {
          Ingresos = totals(objGrid$getGrid(dfIncomes,  CTES$TYPE$Incomes))
          Gastos   = totals(objGrid$getGrid(dfExpenses, CTES$TYPE$Expenses)) * -1
 
@@ -54,13 +58,17 @@ OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
       }
    )
    ,private = list(
-       dfIncomes  = NULL
-      ,dfExpenses = NULL
-      ,objGrid    = NULL
-      ,objTable   = NULL
-      ,period     = 0   # El periodo es agno (meses) o mes (dias)
-      ,getTable   = function (target, data) {
+       dfIncomes   = NULL
+      ,dfExpenses  = NULL
+      ,objGrid     = NULL
+      ,objTable    = NULL
+      ,period      = 0   # El periodo es agno (meses) o mes (dias)
+      ,accumulated = FALSE
+      ,getTable    = function (target, data) {
          df = objGrid$getGrid(data) 
+         if (accumulated) {
+            for (col in 6:ncol(df)) df[,col] = df[,col - 1] + df[,col]
+         }
          objTable$setData(df)$getTable(target)
        }
       ,totals = function (df) {

@@ -40,11 +40,13 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          if (missing(expense)) return (private$dfMov)
          dfMov %>% dplyr::filter(expense == expense)
       }
-      ,getMovementsByPeriod = function (month, expense) {
+      ,getMovementsByPeriod = function (month, reload=TRUE) {
+         if (reload) loadMovements()
          df = dfMov
          if (month > 0) df = dfMov %>% dplyr::filter(month(dateVal) == month)
-         if (missing(expense)) return (df)
-         df %>% dplyr::filter(expense == expense)
+         # if (missing(expense)) return (df)
+         # df %>% dplyr::filter(expense == expense)
+         df
       }
       ,getMethods    = function (expenses = TRUE)          { 
          if ( expenses) df = tblMethods$table(expense = 1, active = 1) 
