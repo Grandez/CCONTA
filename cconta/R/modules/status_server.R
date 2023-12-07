@@ -10,6 +10,8 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
          super$initialize(id, session, TRUE)
          self$data$source = 0
          private$objMovements = factory$getObject("Movements")
+         private$objGroups    = factory$getObject("Groups")
+         private$objPlot      = factory$getObject("Plot")
       }
      ,setSource = function (src) {
         self$data$source = as.integer(src) # Movimientos o situacion presupuestaria
@@ -27,10 +29,17 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
         }
         objPage$setData(df, self$data$period)
      }
+     ,getPlotObject = function ()     { objPlot }
+     ,getGroupId    = function (name) {
+        df = objGroups$getGroupByName(name) 
+        df$id
+      }
    )
   ,private = list(
       objMovements = NULL
+     ,objGroups    = NULL
      ,objBudget    = NULL 
+     ,objPlot      = NULL
      ,getMovements = function (reload) {
         df = objMovements$getMovementsByPeriod(self$data$period, reload)
         df = df[df$type %in% which(self$vars$types == TRUE),]
@@ -51,27 +60,27 @@ PNLStatus = R6::R6Class("CONTA.PNL.STATUS"
 moduleServer(id, function(input, output, session) {
    pnl = WEB$getPanel(id, PNLStatus, NULL, session)
 
-   makePlot = function() {
-      df = pnl$getDataSummary()
-      df = df[df$idGroup > 0,]
-      df = df[,-c(1,2)]
-      dfi =  gather(df[df$Concepto == "Ingresos",], "Mes", "Concepto")
-      dfg =  gather(df[df$Concepto == "Gastos",],   "Mes", "Concepto")
-      colnames(dfi) = c("Mes", "Ingresos")
-      colnames(dfg) = c("Mes", "Gastos")
-      df2 = full_join(dfi, dfg, by="Mes")
-      
-      df2$Mes = as.integer(df2$Mes)
-      fig = plot_ly(df2, x=~Mes, y=~Gastos, type="bar")
-      #fig %>% add_trace(x=~Mes, y=~Ingresos, type="bar")
-      fig      
+   renderPlot = function(type, tableData) {
+      plot = pnl$getPlotObject()
+      if (type == 0) return (renderPlotly(plot$groupedBar(pnl$getSummaryData())))
+      renderPlotly(plot$stackedBar(parseDataTable(type, tableData)))
+   }
+   parseDataTable = function (type, tableData) {
+      data = jsonlite::fromJSON(tableData$detail)
+      # Se ha pulsado en una agrupacion
+      if (is.null(data$idGroup)) {
+         data$idGroup    = pnl$getGroupId(data$group)
+         data$idCategory = 0
+         df = pnl$getGroupedData(type, data$idGroup)
+      }   
+      df[,3:ncol(df)]
    }
    refresh = function (reload = TRUE) {
       pnl$refreshData(reload)
       output$tblExpenses = updTable({ pnl$getExpensesTable(ns("tblExpenses")) })
       output$tblIncomes  = updTable({ pnl$getIncomesTable(ns("tblIncomes")) })
       output$tblSummary  = updTable({ pnl$getSummaryTable() })
-#      output$plot        = renderPlotly   ({ makePlot()  })
+      output$plot = renderPlot(0, NULL)
    }
    observeEvent(input$cboPeriod, { 
       pnl$data$period = as.integer(input$cboPeriod) 
@@ -98,6 +107,10 @@ moduleServer(id, function(input, output, session) {
       refresh()
    }, ignoreInit = TRUE)
 
+   observeEvent(input$tblSummary,  { output$plot = renderPlot(0, input$tblSummary)  })
+   observeEvent(input$tblIncomes,  { output$plot = renderPlot(1, input$tblIncomes)  })
+   observeEvent(input$tblExpenses, { output$plot = renderPlot(2, input$tblExpenses) })
+   
    if (!pnl$loaded) {
       pnl$loaded = TRUE
       refresh()

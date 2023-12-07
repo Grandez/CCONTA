@@ -8,6 +8,7 @@ suppressMessages(library(lubridate,          warn.conflicts = FALSE))
 suppressMessages(library(openxlsx,           warn.conflicts = FALSE))
 suppressMessages(library(reactable,          warn.conflicts = FALSE))
 suppressMessages(library(plotly,             warn.conflicts = FALSE))
+suppressMessages(library(jsonlite,           warn.conflicts = FALSE))
 
 suppressMessages(library(RMariaDB,     warn.conflicts = FALSE))
 

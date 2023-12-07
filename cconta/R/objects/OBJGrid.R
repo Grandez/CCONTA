@@ -47,6 +47,7 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
          private$dfData = data
          invisible(self)
       }
+      ,getGroups = function () { dfBaseAll }
       ,getGrid = function (data, type = NULL) {
          oldType = NULL
          if (!is.null(type)) {

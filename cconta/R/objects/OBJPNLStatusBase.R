@@ -37,11 +37,12 @@ PNLStatusBase     = R6::R6Class("CONTA.PNL.STATUS.BASE"
      }
      ,getExpensesTable = function (target) { objPage$getExpensesTable(target) }
      ,getIncomesTable  = function (target) { objPage$getIncomesTable (target) }     
-     ,getSummaryTable  = function (target) { objPage$getSummaryTable (target) } # Estaba a NULL 
-     # ,getTableSummary  = function (target) { gridSummary$getReactable (target) }
-     # ,getTableIncomes  = function (target) { gridIncomes$getReactable (target) }
-     # ,getTableExpenses = function (target) { gridExpenses$getReactable(target) }
-     # ,getDataSummary   = function ()       { gridSummary$getData ()            }     
+     ,getSummaryTable  = function (target) { objPage$getSummaryTable (target) } 
+     ,getExpensesData  = function (target) { objPage$getExpensesData (target) }
+     ,getIncomesData   = function (target) { objPage$getIncomesData  (target) }     
+     ,getSummaryData   = function (target) { objPage$getSummaryData  (target) }
+     ,getGroupedData   = function (type, group ) { objPage$getGroupedData(type, group)         }
+     
    )
   ,private = list(
       gridSummary  = NULL
