@@ -32,25 +32,18 @@ OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
          invisible(self)
       }
       ,getExpensesData = function () { 
-         objGrid$setType(CTES$TYPE$Expenses)
          objGrid$setPeriod(private$period)
-         prepareData(dfExpenses)
+         prepareData(dfExpenses, TRUE)
        }
       ,getIncomesData  = function () { 
-         objGrid$setType(CTES$TYPE$Incomes)
          objGrid$setPeriod(private$period)
-         prepareData(dfIncomes)
+         prepareData(dfIncomes, FALSE)
        }
       ,getSummaryData  = function (target) { dfSummary[1:2,] }
       ,getGroupedData  = function (type, pgroup) {
          if (type == 1) df = getIncomesData()
          if (type == 2) df = getExpensesData()
          df %>% dplyr::filter (idGroup == pgroup)
-         # df2 %>% group_by(idCategory, period) %>% summarise(importe=sum(amount))
-         # df2$idGroup = group
-         # browser()
-         # dfc = objGrid$getGroups()
-         # browser()
       }
       ,getExpensesTable = function (target) { 
          df = getExpensesData()
@@ -61,8 +54,8 @@ OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
          getTable(target, df)  
       }
       ,getSummaryTable = function (target) {
-         Ingresos = totals(objGrid$getGrid(dfIncomes,  CTES$TYPE$Incomes))
-         Gastos   = totals(objGrid$getGrid(dfExpenses, CTES$TYPE$Expenses)) * -1
+         Ingresos = totals(objGrid$getGrid(dfIncomes, FALSE))
+         Gastos   = totals(objGrid$getGrid(dfExpenses, TRUE)) * -1
 
          df = rbind(Ingresos, Gastos)
          Balance = colSums(df)
@@ -86,19 +79,14 @@ OBJPageTables = R6::R6Class("CONTA.OBJ.PAGE.TABLES"
       ,objTable    = NULL
       ,period      = 0   # El periodo es agno (meses) o mes (dias)
       ,accumulated = FALSE
-      ,prepareData = function (data) {
-         df = objGrid$getGrid(data) 
+      ,prepareData = function (data, expenses) {
+         df = objGrid$getGrid(data, expenses) 
          if (accumulated) {
             for (col in 6:ncol(df)) df[,col] = df[,col - 1] + df[,col]
          }
          df         
       }
       ,getTable    = function (target, df) {
-         # browser()
-         # df = objGrid$getGrid(data) 
-         # if (accumulated) {
-         #    for (col in 6:ncol(df)) df[,col] = df[,col - 1] + df[,col]
-         # }
          objTable$setData(df)$getTable(target)
        }
       ,totals = function (df) {

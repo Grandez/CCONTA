@@ -48,12 +48,7 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
          invisible(self)
       }
       ,getGroups = function () { dfBaseAll }
-      ,getGrid = function (data, type = NULL) {
-         oldType = NULL
-         if (!is.null(type)) {
-            oldType = getType()
-            setType(type)
-         }
+      ,getGrid = function (data, expenses = TRUE) {
          if (missing(data)) data = dfData
          
          if (nrow(data) == 0) {
@@ -61,8 +56,7 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
             data = cbind(data,tmp)
          }
 
-         dfg = mountGrid()
-         df = rbind(mountGrid(), data)
+         df = rbind(mountGrid(expenses), data)
          
          df = df %>% dplyr::group_by(idGroup, idCategory, period) %>% 
                      dplyr::summarise(amount = sum(amount), .groups="keep")
@@ -70,10 +64,10 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
          # Ahora le hacemos spread y calculamos total
          df = tidyr::spread(df, period, amount, fill=0)
 
-         dfb = getGroupsAndCategories()
+         dfb = getGroupsAndCategories(expenses)
 
          res = dplyr::left_join(dfb, df,by=c("idGroup", "idCategory"))
-         if (!is.null(oldType)) setType(oldType)
+
          res
       }
    )
@@ -110,13 +104,12 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
 
          inner_join(dfc, dfg)
       }
-      ,getDFBase = function () {
-         if (type == CTES$TYPE$Expenses) return (dfBaseExpense)
-         if (type == CTES$TYPE$Incomes)  return (dfBaseIncome)
-         dfBaseAll
+      ,getDFBase = function (expenses) {
+         if (expenses) return (dfBaseExpense)
+         dfBaseIncome
       }
-      ,mountGrid = function () {
-         dfb = getDFBase()
+      ,mountGrid = function (expenses) {
+         dfb = getDFBase(expenses)
 
          # Creamos un df clave/mes o dia/0 (donde clave va de 1 a 12)
          if (period == 0) {
@@ -137,8 +130,8 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
          }
          dfZeroes  
       }
-     ,getGroupsAndCategories = function () {
-         dfb = getDFBase() 
+     ,getGroupsAndCategories = function (expenses) {
+         dfb = getDFBase(expenses) 
          dfb = dfb[,c("idGroup", "idCategory", "group", "category", "class")]
 
          # Ahora se filtra por las categorias fijo/variable/aperiodico
