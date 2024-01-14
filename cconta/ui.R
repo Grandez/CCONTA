@@ -7,27 +7,27 @@ tagList(shinyjs::useShinyjs()
                  ,paths    = NULL,    cssFiles = NULL
                  ,jsFiles  = NULL, jsInit   = NULL
                  ,titleActive = FALSE,  lang     = "es"
+      
+   ,JGGTab(id="detail",     "Detalle",        NULL, JGGUI("detail"))
+   ,JGGTab(id="status",    "Situacion",      NULL, JGGUI("status"))         
+   ,JGGTab(id="budget",    "Presupuesto",    NULL, JGGUI("budget"))
+   ,JGGTab(id="input",     "Entrada",        NULL, JGGUI("input") )
+   ,JGGTab(id="position",  "Posicion",       NULL, JGGUI("position"))
+   ,JGGTab(id="expected",   "Prevision",      NULL, JGGUI("expected"))
 
-   ,JGGTab(id="status",     "Situacion",      NULL, JGGUI("status"))         
-   ,JGGTab(id="budget",     "Presupuesto",    NULL, JGGUI("budget"))      
-# ,JGGTab(id="test",     "Test",        NULL, JGGUI("test") )     
-   ,JGGTab(id="input",    "Entrada",        NULL, JGGUI("input") )
-
-   # ,JGGTab(id="position",   "Posicion",       NULL, JGGUI("position"))
-   
-   # ,JGGTab(id="expected",   "Prevision",      NULL, JGGUI("expected"))   
-   # ,JGGTab(id="detail",     "Detalle",        NULL, JGGUI("detail"))
    # 
-    ,JGGTab(id="xfer",     "Transferencias", NULL, JGGUI("xfer"))
-   ,JGGTab(id="export",     "Exportar", NULL, JGGUI("export"))
+   #  ,JGGTab(id="xfer",     "Transferencias", NULL, JGGUI("xfer"))
+   # ,JGGTab(id="export",     "Exportar", NULL, JGGUI("export"))
     ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))
 #   ,JGGTab(id="config",   "Configuracion",  NULL, JGGUI("config"))
-
+    # ,JGGMenu( id="inputs" 
+    #          ,JGGTab(id="income",    "Ingresos",        NULL, JGGUI("input") ) #tabPanel("Ingresos"),
+    #          ,JGGTab(id="expense",   "Gastos",        NULL, JGGUI("input") ) #tabPanel("Gastos")
+    #          , menuName = "titulo", icon = NULL)
    # ,navbarMenu("Entrada"
    #  ,JGGTab(id="income",    "Ingresos",        NULL, JGGUI("input") ) #tabPanel("Ingresos"),
    #  ,JGGTab(id="expense",   "Gastos",        NULL, JGGUI("input") ) #tabPanel("Gastos")
    # )
-
-
+# ,JGGTab(id="test",     "Test",        NULL, JGGUI("test") )     
 )
 )

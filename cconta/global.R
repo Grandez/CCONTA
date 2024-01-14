@@ -14,7 +14,7 @@ suppressMessages(library(RMariaDB,     warn.conflicts = FALSE))
 
 # Forzar a recargar
 unloadNamespace("JGGShiny")
-suppressMessages(library(JGGShiny,          warn.conflicts = FALSE))
+suppressMessages(library(JGGShiny2,          warn.conflicts = FALSE))
 
 # Load sources from subdirectories
 files = list.files(path="R", pattern="\\.R$", recursive=TRUE, full.names=T, ignore.case=F)

@@ -12,9 +12,7 @@ OBJPlot = R6::R6Class("JGG.OBJ.PLOT"
          dfl$Periodo = as.integer(dfl$Periodo)
          p = ggplot(dfl,aes(Periodo,Importe,fill=variable)) +
              geom_bar(stat="identity",position="dodge")
-         p = p + theme_classic() + theme(legend.position = "none")
-         p = p + labs(x=NULL, y=NULL)
-         ggplotly(p)   
+         applyLabs(p, colnames(data[ncol(data)]))
       }
       ,stackedBar = function (data) {
          df = transform(data)
@@ -22,9 +20,7 @@ OBJPlot = R6::R6Class("JGG.OBJ.PLOT"
          dfl$Periodo = as.integer(dfl$Periodo)
          p = ggplot(dfl,aes(Periodo,Importe,fill=variable)) +
              geom_bar(stat="identity")
-         p = p + theme_classic() + theme(legend.position = "none")
-         p = p + labs(x=NULL, y=NULL)
-         ggplotly(p)   
+         applyLabs(p, colnames(data[ncol(data)]))      
       }
       
    )
@@ -34,6 +30,13 @@ OBJPlot = R6::R6Class("JGG.OBJ.PLOT"
          colnames(df) = data[,2]
          df = as.data.frame(df)
          cbind(Periodo=row.names(df), df)
+      }
+      ,applyLabs = function (p, last) {
+         p = p + theme_classic() + theme(legend.position = "none")
+         p = p + labs(x=NULL, y=NULL)
+         p = p + scale_x_continuous(breaks=seq(1,as.integer(last),1))
+         #p = p + theme(axis.text.x=element_text(hjust=0.5))
+         ggplotly(p)   
       }
    )
 )

@@ -9,7 +9,7 @@ OBJMethods = R6::R6Class("JGG.OBJ.METHODS"
       }
       ,getMethods = function(all=FALSE) {
          df = tbl$table()
-         if (!all) df = df[df$active == 1,]
+         if (!all) df = df[df$active != 0,]
          df
       }
    )

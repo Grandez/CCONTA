@@ -32,20 +32,22 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
           # Carga todos los movimientos del agno para evitar accesos a BBDD
           df = tblMovements$recordset(
                   dateVal = list(func="YEAR", value = year)
-                 ,active = list(value = 1)
+                 ,active = list(value = TRUE)
                )
          private$dfMov = df[,!(names(df) %in% c("active", "sync"))]
       }
       ,getMovements = function (expense) {
          if (missing(expense)) return (private$dfMov)
+         if (is.logical(expense)) {
+            if (!expense) return (dfMov %>% dplyr::filter(expense == 0))
+                          return (dfMov %>% dplyr::filter(expense != 0))
+         }
          dfMov %>% dplyr::filter(expense == expense)
       }
       ,getMovementsByPeriod = function (month, reload=TRUE) {
          if (reload) loadMovements()
          df = dfMov
          if (month > 0) df = dfMov %>% dplyr::filter(month(dateVal) == month)
-         # if (missing(expense)) return (df)
-         # df %>% dplyr::filter(expense == expense)
          df
       }
       ,getMethods    = function (expenses = TRUE)          { 
@@ -53,8 +55,8 @@ OBJMovements   = R6::R6Class("CONTA.OBJ.MOVEMENTS"
          if (!expenses) df = tblMethods$table(income  = 1, active = 1)
          df
         }
-      ,getExpenses   = function ()          { getMovements (expense = 1) }
-      ,getIncomes    = function ()          { getMovements (expense = 0) }
+      ,getExpenses   = function ()          { getMovements (expense = TRUE) }
+      ,getIncomes    = function ()          { getMovements (expense = FALSE) }
       ,getMovementsFull  = function (...)  {
          df = getMovements(...)
          if (nrow(df) == 0) return (df)

@@ -37,7 +37,7 @@ modInputInput <- function(id, title) {
                        ,tags$tr( tags$td("Actual"),    tags$td(guiLabelNumber(id=ns("lblCurrent"))))
                        ,tags$tr( tags$td("Pendiente"), tags$td(guiLabelNumber(id=ns("lblPending"))))
             ) # End table
-            ,reactableOutput(ns("tblItemization"))
+            ,reactableOutput(ns("tblItems"))
             ,tags$table( id=ns("tblButtons"), style="float: left"
                         ,tags$td( actionBttn(ns("btnProcess"),  label="Procesar", color="success", style="material-flat")
                                  ,actionBttn(ns("btnCancel"),   label="Anular",   color="danger",  style="material-flat"))

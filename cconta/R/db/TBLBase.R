@@ -372,6 +372,8 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
           if (is.null(values) && is.null(inValues))     return (list(sql="", values=NULL))
           if (length(values) == 0 && is.null(inValues)) return (list(sql="", values=NULL))
           if (!is.null(values) && length(values) > 0) {
+             # Control de boolean
+             #JGG Pendiente
               marks = lapply(values, function(x) " = ?") # Montar la secuencia campo = ? ...
               cond = asString(paste(fields[names(values)], marks), " AND ")
           }
@@ -402,6 +404,13 @@ TBLBase <- R6::R6Class("JGG.TABLE.BASE"
             if (tolower(item$value) == "null") {
                 if (op == "eq") return (list(sql = paste(col, "IS NULL"),     parms = NULL))
                 if (op == "ne") return (list(sql = paste(col, "IS NOT NULL"), parms = NULL))
+            }
+            
+            # Los valores logicos son 0/1/-1. En general 0 es FALSE
+            # Pero 1 o -1 seria ciertos. Este es el truco. CIERTO pasa a NO falso
+            if (is.logical(item$value)) {
+               if (item$value) op = "ne"
+               item$value = 0
             }
             if (op == "eq") return (list(sql = paste(col, "=  ?"), parms = item$value))
             if (op == "ne") return (list(sql = paste(col, "<> ?"), parms = item$value))

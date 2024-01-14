@@ -76,7 +76,10 @@ moduleServer(id, function(input, output, session) {
       df[,3:ncol(df)]
    }
    refresh = function (reload = TRUE) {
+      pnl$loaded = TRUE
       pnl$refreshData(reload)
+
+      data = pnl$getExpensesTable(ns("tblExpenses"))
       output$tblExpenses = updTable({ pnl$getExpensesTable(ns("tblExpenses")) })
       output$tblIncomes  = updTable({ pnl$getIncomesTable(ns("tblIncomes")) })
       output$tblSummary  = updTable({ pnl$getSummaryTable() })
@@ -111,10 +114,7 @@ moduleServer(id, function(input, output, session) {
    observeEvent(input$tblIncomes,  { output$plot = renderPlot(1, input$tblIncomes)  })
    observeEvent(input$tblExpenses, { output$plot = renderPlot(2, input$tblExpenses) })
    
-   if (!pnl$loaded) {
-      pnl$loaded = TRUE
-      refresh()
-   }
-   
+   if (!pnl$loaded) refresh()
+
 })
 }

@@ -9,48 +9,55 @@ PNLDetail = R6::R6Class("CONTA.PNL.DETAIL"
       data = NULL
      ,initialize     = function (id, parent, session) {
           super$initialize(id, session, TRUE)
-          private$objMov = factory$getObject("Movements")
+          private$objMov     = factory$getObject("Movements")
+          private$objGroups  = factory$getObject("Groups")
+          private$objMethods = factory$getObject("Methods")
+          private$objTable  = factory$getObject("TableDetail")
+          self$data$filter = list(source = 0, group = 0, category = 0, method = 0
+                                            , minAmount = 0, maxAmount = 0)
      }
-     ,setFilter     = function (...)       {
-        # filter1: estos campos fuerzan a relanzar la query
-        # filter2: el filtro se hace sobre los datos
-        mainFilter = c("type", "group", "category")
-        args = list(...)
-        for (name in names(args)) {
-           if (name %in% mainFilter) {
-              private$filter1[[name]] = args[[name]]
-              private$reload = TRUE
-           } else {
-              private$filter2[[name]] = args[[name]]
-           }
-        }
+     ,setSource     = function (value) {
         private$reload = TRUE
+        self$data$filter$source = as.integer(value)
+        invisible (self)
+     }
+     ,setFilter     = function (key, value)       {
+        self$data$filter[[key]] = value
         invisible(self)
      }
-     ,getFilter     = function (filterName) {
-        if (!is.null(filter1[[filterName]])) return (filter1[[filterName]])
-        if (!is.null(filter2[[filterName]])) return (filter2[[filterName]])
-        NULL
-     }
-     ,getGroups     = function (type = 1)   { objMov$getGroups     (type)   }
-     ,getCategories = function (group = 0)  { objMov$getCategories (group)  }
-     ,getMethods    = function ()           { objMov$getMethods    ()       }
+     ,getSource     = function() { self$data$filter$source }     
      ,getData       = function () {
         if (reload) reloadData()
         df = dfBase
         if (nrow(df) == 0) return (df)
-        filters = names(filter2)
-        idx = 0
-        while (idx < length(filter2)) {
-           if (filters[idx + 1] == "date") {
-              df = df[df$date >= filter2[[idx + 1]][1] & df$date <= filter2[[idx + 1]][2],]
-              if (nrow(df) == 0) return(df)
-           }
-           idx = idx + 1
-        }
-        self$data = df
+        df =  applyFilters()
+        if (nrow(df) == 0) return (df)
         df
+        # filters = names(filter2)
+        # idx = 0
+        # while (idx < length(filter2)) {
+        #    if (filters[idx + 1] == "date") {
+        #       df = df[df$date >= filter2[[idx + 1]][1] & df$date <= filter2[[idx + 1]][2],]
+        #       if (nrow(df) == 0) return(df)
+        #    }
+        #    idx = idx + 1
+        # }
+        # self$data = df
+        # df
      }
+     ,getFilter     = function (filterName) { self$data$filter[[filerName]] }
+     ,getGroups     = function ()   { 
+         df = objGroups$getGroups() 
+         if (getSource() == 1) df = df[df$expense != 0,]
+         if (getSource() == 2) df = df[df$income  != 0,]
+         df
+      }
+     ,getCategories = function (group = 0)  { 
+         df = objGroups$getCategories()
+         if (group == 0)   return (objGroups$getCategories())
+         objGroups$getCategoriesByGroup(group)
+      }
+     ,getMethods    = function ()           { objMethods$getMethods    ()       }
      ,refreshData = function() {
 #        if (reload) reloadData()
         # objMovements
@@ -66,95 +73,106 @@ PNLDetail = R6::R6Class("CONTA.PNL.DETAIL"
      # ,getExpenses = function (target) { frmExpenses$getReactable(target) }
    )
   ,private = list(
-     #  frmSummary   = NULL
-     # ,frmIncomes   = NULL
-     # ,frmExpenses  = NULL
-      objMov = NULL
-     ,filter1 = list()
-     ,filter2 = list()
-     ,reload  = TRUE
-     ,dfBase  = NULL
+      objMov     = NULL
+     ,objGroups  = NULL
+     ,objMethods = NULL
+     ,objTable   = NULL
+     ,dfBase     = NULL
+     ,reload     = TRUE
+     
      ,reloadData = function () {
-        private$dfBase = objMov$getMovementsFull(filter1)
+        type = self$data$filter$source
+        dfExpenses = NULL
+        dfIncomes = NULL
+        if (type == 0 || type == 1) dfExpenses = objMov$getExpenses()
+        if (type == 0 || type == 2) dfIncomes  = objMov$getIncomes()
+        private$dfBase = rbind(dfExpenses, dfIncomes)
         private$reload = FALSE
+     }
+     ,applyFilters = function () {
+        filter = self$data$filter
+        df = dfBase
+        if (filter$group     != 0) df = df %>% filter (idGroup    == filter$group)
+        if (filter$category  != 0) df = df %>% filter (idCategory == filter$category)
+        if (filter$method    != 0) df = df %>% filter (idMethod   == filter$category)
+        if (filter$minAmount != 0) df = df %>% filter (amount     >= filter$minAmount)
+        if (filter$maxAmount != 0) df = df %>% filter (amount     <= filter$minAmount)
+        df
      }
    )
 )
 
 moduleServer(id, function(input, output, session) {
    pnl = WEB$getPanel(id, PNLDetail, NULL, session)
-   
-   flags = reactiveValues(
-         refresh    = FALSE
-   ) 
-   
-   loadGroups = function () {
-      df = pnl$getGroups(pnl$getFilter("type"))
-      cbo = WEB$makeCombo(df)
-      updateSelectInput( session, "cboGroups"
-                        ,choices = jgg_list_merge(list("Todos" = "0"), cbo)
-                        ,selected = "0")
-   }
-   loadCategories = function () {
-      df = pnl$getCategories(pnl$getFilter("group"))
-      cbo = WEB$makeCombo(df)
-      updateSelectInput( session, "cboCategories"
-                        ,choices = jgg_list_merge(list("Todos" = "0"), cbo)
-                        ,selected = "0")
-   }
-   prepareData = function (df) {
-      row_style = function(index) {
-         if (df[index, "type"] == 1) list(fontWeight = "bold")
-      }
-      mtheme = reactableTheme(cellPadding = "0px 0px")   
-      colsHide = c("id", "type")
-      cols = lapply(colsHide, function(col) colDef(show = FALSE))
-      names(cols) = colsHide
-      #cols$tags = colDef(width="auto")
-      df = df[,c("id", "type", "date","group","category","method","amount","note","tags")]
-      reactable::reactable(df, rowStyle = row_style, theme = mtheme, columns=cols, width="100%", pagination = FALSE, onClick = jscode(ns("tblDetail")) )
-   }
-    jscode = function(idTable) {
-       data = paste("{ row: rowInfo.index + 1, colName: colInfo.id")
-       data = paste(data, ",detail: JSON.stringify(rowInfo.row)}")
-       evt = paste0("Shiny.setInputValue('", idTable, "',", data, ",{ priority: 'event' });")
 
-         js_code = "function(rowInfo, colInfo) {"
-         # Exclude columns
-#         js_code = paste(js_code, " if (colInfo.id !== 'details') { return;  }", sep="\n")
-#         js_code = paste(js_code, "window.alert('Details for row ' + rowInfo.index + ':\\n' + JSON.stringify(rowInfo.row, null, 2));", sep="\n")
-         js_code = paste(js_code, evt, sep="\n")
-         js_code = paste(js_code, "}", sep="\n")
-         JS(js_code)
-    }
-   
-   observeEvent(flags$refresh, ignoreInit = TRUE, {
-      df = pnl$getData()
-      if (nrow(df) == 0) {
+   loadFilters = function () {
+       loadGroups()
+       loadCategories() 
+       cbo = WEB$makeCombo(pnl$getMethods(),"Todos" = 0)
+       updCombo("cboMethods",choices = cbo,selected = "0")
+
+   }
+   showData = function (nrows) {
+      DATA = TRUE
+      if (nrows == 0) {
           shinyjs::show("nodata")
           shinyjs::hide("data")
+          DATA = FALSE
       } else {
           shinyjs::show("data")
           shinyjs::hide("nodata")
       }
-      output$tblDetail  = renderReactable({ prepareData(df) })
-   })
+      DATA
+   }
+   refresh = function () {
+      browser()
+      pnl$data$refreshing = TRUE
+      df = pnl$getData()
+      if (!showData(nrow(df))) return
+      minAmount = ceiling(min(df$amount))
+      maxAmount = floor(max(df$amount) + 1)
+      updateSliderInput(inputId="sldAmount", value=c(min(df$amount), max(df$amount)), min=minAmount, max=maxAmount)
+      output$tblDetail  = updTable({ df })
+      pnl$loaded = TRUE
+   }
+   
+   loadGroups = function () {
+      cbo = WEB$makeCombo(pnl$getGroups(),"Todos" = 0)
+      updCombo("cboGroups",choices = cbo,selected = "0")
+   }
+   loadCategories = function () {
+      cbo = WEB$makeCombo(pnl$getCategories(),"Todas" = 0)
+      updCombo("cboCategories",choices = cbo,selected = "0")
+   }
    observeEvent(input$radType, ignoreInit = TRUE,   { 
-      pnl$setFilter(type = as.integer(input$radType))
+      pnl$setSource(input$radType)
       loadGroups() 
-      flags$refresh  = isolate(!flags$refresh)
+      refresh()
    })
-   observeEvent(input$cboGroups, {
-      pnl$setFilter(group = as.integer(input$cboGroups))
+   observeEvent(input$cboGroups, ignoreInit = TRUE,   { 
+      pnl$setFilter("group", as.integer(input$cboGroups))
       loadCategories() 
+      # refresh() Se refresca en categoria
    })
-   observeEvent(input$cboCategories, {
-      pnl$setFilter(category = as.integer(input$cboCategories))
-      flags$refresh  = isolate(!flags$refresh)
+   observeEvent(input$cboCategories, ignoreInit = TRUE,   { 
+      pnl$setFilter("category", as.integer(input$cboCategories))
+      refresh()
    })
-   observeEvent(input$dtRange, {
+   observeEvent(input$cboMethods, ignoreInit = TRUE,   { 
+      pnl$setFilter("method", as.integer(input$cboMethods))
+      refresh()
+   })
+   observeEvent(input$sldAmount, ignoreInit = TRUE,   { 
+      pnl$setFilter("minAmount", as.numeric(input$sldAmount[1]))
+      pnl$setFilter("maxAmount", as.numeric(input$sldAmount[2]))
+
+      if (!pnl$data$refreshing) refresh()
+      pnl$data$refreshing = FALSE
+   })
+
+   observeEvent(input$dtRange, ignoreInit = TRUE,   { 
       pnl$setFilter(date=input$dtRange)
-      flags$refresh  = isolate(!flags$refresh)
+      refresh()
    })
    observeEvent(input$tblDetail, {
       browser()
@@ -170,6 +188,11 @@ moduleServer(id, function(input, output, session) {
 #   fade = TRUE
 # ))
    })
+
+   if (!pnl$loaded) {
+       loadFilters()
+       refresh()
+   }
    
    
 })

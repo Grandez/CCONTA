@@ -51,10 +51,10 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
       ,getGrid = function (data, expenses = TRUE) {
          if (missing(data)) data = dfData
          
-         if (nrow(data) == 0) {
-            tmp = data.frame(active=integer(0))
-            data = cbind(data,tmp)
-         }
+         # if (nrow(data) == 0) {
+         #    tmp = data.frame(active=integer(0))
+         #    data = cbind(data,tmp)
+         # }
 
          df = rbind(mountGrid(expenses), data)
          
@@ -126,7 +126,7 @@ OBJGrid = R6::R6Class("CONTA.OBJ.GRID"
              private$dfZeroes = cbind(dfb, data.frame(amount=numeric(), period=integer()))
          } else {
              dfKeys$amount = 0
-             private$dfZeroes = full_join(dfKeys,dft, by="amount", multiple="all")
+             private$dfZeroes = full_join(dfKeys,dft, by="amount", relationship="many-to-many")
          }
          dfZeroes  
       }

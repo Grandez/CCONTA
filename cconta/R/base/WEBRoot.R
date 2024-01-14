@@ -32,10 +32,12 @@ WEBROOT = R6::R6Class("JGG.INFO.APP"
         private$args = list(...)
         super$getPanel(id,object,parent,session)
      }
-     ,makeCombo = function(df, sorted=TRUE, id="id", name="name") {
+     ,makeCombo = function(df, sorted=TRUE, id="id", name="name", ...) {
          data = as.list(df[,id])
          names(data) = df[,name]
         if (sorted) data = data[order(names(data))]
+         others=list(...)
+         if (length(others) > 0) data = jgg_list_merge(others, data)
         data
     }
      
