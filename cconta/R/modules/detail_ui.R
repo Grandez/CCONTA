@@ -16,13 +16,11 @@ modDetailInput <- function (id, title) {
          ,guiCombo  (ns("cboCategories"), "Categorias", c("Category"= 0))
          ,guiCombo  (ns("cboMethods"),    "Metodo",     c("Method"  = 0))
          ,guiCombo  (ns("cboTypes"),      "Tipo movimiento",     c("Tipo"  = 0))             
-         ,dateRangeInput( ns("dtRange"), "Intervalo"
-                         ,min   = paste(year(Sys.Date()), "01", "01", sep="-")
-                         ,max   = paste(year(Sys.Date()), "12", "31", sep="-")
-                         ,start = paste(year(Sys.Date()), month(Sys.Date()), "01", sep="-")
-                         ,format    = "dd/mm/yyyy",startview = "month", weekstart = 1
-                         ,language  = "es", separator = " to ",width = NULL,autoclose = TRUE)
-       ,sliderInput(ns("sldAmount"), "Importe",  min = 1, max = 1000, value = c(200,500)),
+         ,sliderInput(ns("slDate"),    "Periodo", min = as.Date(paste0(year(Sys.Date()), "/01/01"))
+                                                , max = as.Date(paste0(year(Sys.Date()), "/12/31"))
+                                                ,value = c( as.Date(paste0(year(Sys.Date()), "/01/01"))
+                                                           ,as.Date(paste0(year(Sys.Date()), "/12/31"))))
+         ,sliderInput(ns("sldAmount"), "Importe",  min = 1, max = 1000, value = c(200,500)),
     )
    list(left=left, main=main, right=NULL)    
 }

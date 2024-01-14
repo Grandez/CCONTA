@@ -12,7 +12,7 @@ PNLDetail = R6::R6Class("CONTA.PNL.DETAIL"
           private$objMov     = factory$getObject("Movements")
           private$objGroups  = factory$getObject("Groups")
           private$objMethods = factory$getObject("Methods")
-          private$objTable  = factory$getObject("TableDetail")
+          private$objTable   = factory$getObject("TableDetail")
           self$data$filter = list(source = 0, group = 0, category = 0, method = 0
                                             , minAmount = 0, maxAmount = 0)
      }
@@ -30,20 +30,7 @@ PNLDetail = R6::R6Class("CONTA.PNL.DETAIL"
         if (reload) reloadData()
         df = dfBase
         if (nrow(df) == 0) return (df)
-        df =  applyFilters()
-        if (nrow(df) == 0) return (df)
-        df
-        # filters = names(filter2)
-        # idx = 0
-        # while (idx < length(filter2)) {
-        #    if (filters[idx + 1] == "date") {
-        #       df = df[df$date >= filter2[[idx + 1]][1] & df$date <= filter2[[idx + 1]][2],]
-        #       if (nrow(df) == 0) return(df)
-        #    }
-        #    idx = idx + 1
-        # }
-        # self$data = df
-        # df
+        applyFilters()
      }
      ,getFilter     = function (filterName) { self$data$filter[[filerName]] }
      ,getGroups     = function ()   { 
@@ -58,19 +45,9 @@ PNLDetail = R6::R6Class("CONTA.PNL.DETAIL"
          objGroups$getCategoriesByGroup(group)
       }
      ,getMethods    = function ()           { objMethods$getMethods    ()       }
-     ,refreshData = function() {
-#        if (reload) reloadData()
-        # objMovements
-        # frmExpenses$set(objMovements$getExpenses())
-        # frmIncomes$set (objMovements$getIncomes ())
-        # totExpenses = frmExpenses$getTotal()
-        # totIncomes  = frmIncomes$getTotal()
-        # frmSummary$setIncomes(totIncomes)
-        # frmSummary$setExpenses(totExpenses)
+     ,getDataTable  = function (df, idTbl)  {
+         objTable$getTable(df, idTbl, grouped=TRUE) 
      }
-     # ,getSummary  = function (target) { frmSummary$getReactable (target) }
-     # ,getIncomes  = function (target) { frmIncomes$getReactable (target) }
-     # ,getExpenses = function (target) { frmExpenses$getReactable(target) }
    )
   ,private = list(
       objMov     = NULL
@@ -110,7 +87,9 @@ moduleServer(id, function(input, output, session) {
        loadCategories() 
        cbo = WEB$makeCombo(pnl$getMethods(),"Todos" = 0)
        updCombo("cboMethods",choices = cbo,selected = "0")
-
+       dtFrom = as.Date(paste0(year(Sys.Date()), "/01/01"))
+       dtTo   = as.Date(paste0(year(Sys.Date()), "/12/31"))
+       updateSliderInput(inputId="sldDate", value=c(dtFrom, dtTo), min=dtFrom, max=dtTo)       
    }
    showData = function (nrows) {
       DATA = TRUE
@@ -125,14 +104,13 @@ moduleServer(id, function(input, output, session) {
       DATA
    }
    refresh = function () {
-      browser()
       pnl$data$refreshing = TRUE
       df = pnl$getData()
       if (!showData(nrow(df))) return
       minAmount = ceiling(min(df$amount))
       maxAmount = floor(max(df$amount) + 1)
       updateSliderInput(inputId="sldAmount", value=c(min(df$amount), max(df$amount)), min=minAmount, max=maxAmount)
-      output$tblDetail  = updTable({ df })
+      output$tblDetail  = updTable({ pnl$getDataTable(df, ns("tblDetail")) })
       pnl$loaded = TRUE
    }
    
@@ -169,10 +147,12 @@ moduleServer(id, function(input, output, session) {
       if (!pnl$data$refreshing) refresh()
       pnl$data$refreshing = FALSE
    })
+   observeEvent(input$sldDate, ignoreInit = TRUE,   { 
+      pnl$setFilter("dateFrom", input$sldDate[1])
+      pnl$setFilter("dateTot",  input$sldDate[2])
 
-   observeEvent(input$dtRange, ignoreInit = TRUE,   { 
-      pnl$setFilter(date=input$dtRange)
-      refresh()
+      if (!pnl$data$refreshing) refresh()
+      pnl$data$refreshing = FALSE
    })
    observeEvent(input$tblDetail, {
       browser()
